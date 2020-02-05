@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.act.mapper.ActUserTaskMapper">
+
+    <resultMap id="BaseResultMap" type="com.bp.act.entity.process.ActUserTask">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="proc_def_key" jdbcType="VARCHAR" property="procDefKey"/>
+        <result column="proc_def_name" jdbcType="VARCHAR" property="procDefName"/>
+        <result column="task_def_key" jdbcType="VARCHAR" property="taskDefKey"/>
+        <result column="task_name" jdbcType="VARCHAR" property="taskName"/>
+        <result column="task_type" jdbcType="VARCHAR" property="taskType"/>
+        <result column="candidate_name" jdbcType="VARCHAR" property="candidateName"/>
+        <result column="candidate_ids" jdbcType="VARCHAR" property="candidateIds"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,proc_def_key,proc_def_name,task_def_key,task_name,task_type,candidate_name,candidate_ids
+    </sql>
+
+    <!-- 添加设定流程办理人 -->
+    <insert id="insert" parameterType="com.bp.act.entity.process.ActUserTask" useGeneratedKeys="true" keyProperty="id">
+        insert into act_user_task
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="procDefKey != null">proc_def_key,</if>
+            <if test="procDefName != null">proc_def_name,</if>
+            <if test="taskDefKey != null">task_def_key,</if>
+            <if test="taskName != null">task_name,</if>
+            <if test="taskType != null">task_type,</if>
+            <if test="candidateName != null">candidate_name,</if>
+            <if test="candidateIds != null">candidate_ids,</if>
+            <if test="jcbms != null">jcbms,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id,jdbcType=INTEGER},</if>
+            <if test="procDefKey != null">#{procDefKey,jdbcType=VARCHAR},</if>
+            <if test="procDefName != null">#{procDefName,jdbcType=VARCHAR},</if>
+            <if test="taskDefKey != null">#{taskDefKey,jdbcType=VARCHAR},</if>
+            <if test="taskName != null">#{taskName,jdbcType=VARCHAR},</if>
+            <if test="taskType != null">#{taskType,jdbcType=VARCHAR},</if>
+            <if test="candidateName != null">#{candidateName,jdbcType=VARCHAR},</if>
+            <if test="candidateIds != null">#{candidateIds,jdbcType=VARCHAR},</if>
+            <if test="jcbms != null">#{jcbms,jdbcType=VARCHAR},</if>
+        </trim>
+    </insert>
+
+    <!-- 删除act_user_task -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from act_user_task where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 批量删除act_user_task -->
+    <delete id="deleteByIds" parameterType="java.lang.Integer">
+        delete from act_user_task where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 修改act_user_task -->
+    <update id="update" parameterType="com.bp.act.entity.process.ActUserTask">
+        update act_user_task
+        <set>
+            <if test="id != null">id = #{id,jdbcType=INTEGER},</if>
+            <if test="procDefKey != null">proc_def_key = #{procDefKey,jdbcType=VARCHAR},</if>
+            <if test="procDefName != null">proc_def_name = #{procDefName,jdbcType=VARCHAR},</if>
+            <if test="taskDefKey != null">task_def_key = #{taskDefKey,jdbcType=VARCHAR},</if>
+            <if test="taskName != null">task_name = #{taskName,jdbcType=VARCHAR},</if>
+            <if test="taskType != null">task_type = #{taskType,jdbcType=VARCHAR},</if>
+            <if test="candidateName != null">candidate_name = #{candidateName,jdbcType=VARCHAR},</if>
+            <if test="candidateIds != null">candidate_ids = #{candidateIds,jdbcType=VARCHAR},</if>
+            <if test="jcbms != null">jcbms = #{jcbms,jdbcType=VARCHAR},</if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <!-- 根据ID查询act_user_task -->
+    <select id="selectById" resultType="java.util.Map">
+        select
+        id,proc_def_key,proc_def_name,task_def_key,task_name,task_type,candidate_name,candidate_ids
+        from act_user_task
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 根据ID查询act_user_task实体 -->
+    <select id="selectEntityById" resultMap="BaseResultMap">
+        select
+        id,proc_def_key,proc_def_name,task_def_key,task_name,task_type,candidate_name,candidate_ids
+        from act_user_task
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 查询act_user_task列表 -->
+    <select id="selectAll" resultType="java.util.Map">
+        select
+        id,proc_def_key,proc_def_name,task_def_key,task_name,task_type,candidate_name,candidate_ids
+        from act_user_task
+    </select>
+
+    <!-- 带参数查询act_user_task列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        id,proc_def_key,proc_def_name,task_def_key,task_name,task_type,candidate_name,candidate_ids
+        from act_user_task where 1=1
+    </select>
+    <select id="selectAllByKey" resultType="java.util.Map">
+        SELECT * FROM act_user_task WHERE proc_def_key = #{key}
+    </select>
+    <select id="selectAllEntityByKey" resultType="com.bp.act.entity.process.ActUserTask">
+        SELECT * FROM act_user_task WHERE proc_def_key = #{key}
+    </select>
+    <select id="findByPidAndTaskKey" resultType="com.bp.act.entity.process.ActUserTask">
+        SELECT * from act_user_task where proc_def_key=#{pkey} and task_def_key=#{tkey}
+    </select>
+    <select id="findUserTaskByPkeyAndTaskKey" resultType="com.bp.act.entity.process.ActUserTask">
+
+        SELECT * FROM  act_user_task WHERE
+    </select>
+    <update id="updateUser">
+        <foreach collection="list" item="map" separator=",">
+            UPDATE act_user_task set
+            task_type=#{map.taskType},candidate_name=#{map.candidateName},candidate_ids=#{map.candidateIds}
+            WHERE id=#{map.id}
+        </foreach>
+
+    </update>
+</mapper>
+

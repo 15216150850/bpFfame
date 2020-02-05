@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.FlowSuperviAbilityMapper">
+	
+	<!-- 带参数查询监督问责列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+			a.*,b.ability_state,b.busi_pid as pid
+
+		from flow_supervi_ability a
+		 left join flow_six_sys b on a.uuid=b.supse_uuid
+		 where 1=1
+		and  b.is_ability  ='1'
+		<if test="keyWord!=null and keyWord!=''">
+			and a.act_title  like concat(#{keyWord},'%')
+		</if>
+		<if test="actTitle!=null and actTitle!=''">
+			and a.act_title  like concat(#{actTitle},'%')
+		</if>
+		<if test="abilityState==4">
+			and a.remark is not null
+		</if>
+		<if test="abilityState!=null and abilityState!='' and abilityState!=4">
+			and b.ability_state=#{abilityState} and a.remark is  null
+		</if>
+		<if test="sysType!=null and sysType!=''">
+			and b.sys_type=#{sysType}
+		</if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+
+	</select>
+
+</mapper>
+

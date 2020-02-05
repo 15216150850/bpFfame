@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.hr.FlowHrKjfldjsMapper">
+	
+	<!-- 带参数查询科级非领导职务晋升工作列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+        fhk.uuid, json_length(fhk.jsry) as jsrs, fhk.yjsm, fhk.xgwj, fhk.sqr, fhk.sqrbm, fhk.sqsj,
+        fhk.act_title, fhk.pid, fhk.remark, fhk.doc_state, fhk.flow_sn, fhk.flow_state,
+        fhk.inserter, fhk.insert_time, fhk.updater, fhk.update_time, fhk.zzchysj, fhk.zzchynr, fhk.ldxzhysj,
+        fhk.ldxzhynr, fhk.ydrs, fhk.sdrs, fhk.rymd, fhk.cgd, fhk.gs, fhk.hccl, b.name as flow_state_name
+		from flow_hr_kjfldjs fhk left join t_dictionary b on fhk.flow_state = b.code and b.type = 'flowState' where 1=1
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and fhk.inserter = #{currentUserId}
+        </if>
+        <if test="flowState != null and flowState!=''">
+            AND( fhk.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fhk.flow_state=6 or fhk.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fhk.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fhk.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (fhk.act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="sqr != null and sqr != ''">
+            and (fhk.sqr like concat('%',#{sqr},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fhk.sqsj,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fhk.sqsj,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by fhk.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+</mapper>
+

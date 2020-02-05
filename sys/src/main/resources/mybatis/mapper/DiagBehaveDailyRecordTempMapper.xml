@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.DiagBehaveDailyRecordTempMapper">
+    <delete id="deleteYearAndMonth">
+        delete from diag_behave_daily_record_temp
+        where parent_id=#{parentId}
+        <if test="type!=null and type!=''">
+            and type=#{type}
+        </if>
+    </delete>
+
+    <select id="selectEntityByPid" resultType="com.bp.sys.po.DiagBehaveDailyRecordTemp">
+        select
+            a.*,b.name AS gradeTypeCodeName,c.name AS gradeIndexCodeName,d.content AS
+            gradeContentName,concat(d.content,'(',a.content,')') AS contentAll,a.content AS acontent
+        from diag_behave_daily_record_temp a
+            left join ser_dictionary b on a.grade_type_code=b.code and b.type='jflx'
+            left join ser_dictionary c on a.grade_index_code=c.code and c.type='jfxm'
+            left join diag_behave_grade_item d on a.grade_content_code=d.code
+        where a.parent_id=#{parentId}
+        <if test="type!=null and type!=''">
+            and a.type=#{type}
+        </if>
+    </select>
+
+    <!-- 带参数查询日常计分明细（临时）列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+			uuid,jdrybm,jdjgbm,bmbm,record_date,grade_type_code,grade_index_code,grade_item_code,grade_content_code,grade_change,content,inserter,insert_time,updater,update_time
+		from diag_behave_daily_record_temp where 1=1
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+</mapper>
+

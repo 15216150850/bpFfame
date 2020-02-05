@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.FlowSixSysMapper">
+    <delete id="deleteBusi">
+
+        delete from ${tableName} where uuid=#{uuid}
+    </delete>
+
+    <!-- 带参数查询六大体系流程汇总表列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+			uuid,sys_type,supse_pid,busi_pid,table_name,ability_state,is_ability,inserter,insert_time,updater,update_time
+		from flow_six_sys where 1=1
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+        <select id="findBymyApplications" resultType="java.util.Map">
+      select * from ${tableName} where uuid=#{uuid} and inserter=#{userId}
+      <if test="flowState!=null and flowState!=''">
+          and  flow_state in
+          <foreach item="state" collection="flowState" open="(" separator="," close=")">
+              #{state}
+          </foreach>
+      </if>
+
+    </select>
+    <select id="selectAll" resultType="com.bp.common.entity.FlowSixSys">
+        SELECT * FROM flow_six_sys where 1=1
+         <if test="sysType!=null and sysType!=''">
+             and sys_type=#{sysType}
+         </if>
+         ORDER BY insert_time desc
+    </select>
+    <select id="selectBusi" resultType="java.util.Map">
+        SELECT * FROM  ${tableName} where uuid=#{uuid}
+    </select>
+
+
+</mapper>
+

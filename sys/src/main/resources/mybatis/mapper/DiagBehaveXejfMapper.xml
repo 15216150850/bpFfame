@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.DiagBehaveXejfMapper">
+
+    <!-- 带参数查询小额计分列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        a.*,b.xm
+        from diag_behave_xejf a
+        left join base_addicts b on a.jdrybm=b.jdrybm
+        where 1=1
+        <if test="xm!=null and xm!=''">
+            and b.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="keyWord!=null and keyWord!=''">
+            and b.xm like concat('%',#{keyWord},'%')
+        </if>
+        order by insert_time DESC
+    </select>
+
+</mapper>
+

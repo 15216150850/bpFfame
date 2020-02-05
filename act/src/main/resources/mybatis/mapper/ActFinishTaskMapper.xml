@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.act.mapper.ActFinishTaskMapper">
+
+    <resultMap id="BaseResultMap" type="com.bp.act.entity.ActFinishTask">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="proinc_id" jdbcType="VARCHAR" property="proincId"/>
+        <result column="act_name" jdbcType="VARCHAR" property="actName"/>
+        <result column="act_user_id" jdbcType="INTEGER" property="actUserId"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="inserter" jdbcType="INTEGER" property="inserter"/>
+        <result column="insert_time" jdbcType="TIMESTAMP" property="insertTime"/>
+        <result column="updater" jdbcType="INTEGER" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="applicant" jdbcType="VARCHAR" property="applicant"/>
+        <result column="flow_sn" jdbcType="VARCHAR" property="flowSn"/>
+        <result column="appli_time" jdbcType="TIMESTAMP" property="appliTime"/>
+        <result column="current_state" jdbcType="VARCHAR" property="currentState"/>
+        <result column="appli_name" jdbcType="VARCHAR" property="appliName"/>
+        <result column="comment" jdbcType="VARCHAR" property="comment"/>
+        <result column="file_uuid" jdbcType="VARCHAR" property="fileUuid"/>
+        <result column="sign_name" jdbcType="VARCHAR" property="signName"/>
+        <result column="msg" jdbcType="VARCHAR" property="msg"/>
+        <result column="select_msg" jdbcType="VARCHAR" property="selectMsg"/>
+        <result column="act_title" jdbcType="VARCHAR" property="actTitle"/>
+        <result column="current_finish_state" jdbcType="VARCHAR" property="currentFinishState"/>
+        <result column="key" jdbcType="VARCHAR" property="key"/>
+
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,proinc_id,act_name,act_user_id,end_time,inserter,insert_time,updater,update_time,applicant,flow_sn,appli_time,current_state,appli_name,comment,file_uuid,sign_name,msg,select_msg,actTitle,`key`,current_finish_state
+    </sql>
+
+    <!-- 添加个人已办理的任务 -->
+    <insert id="insert" parameterType="com.bp.act.entity.ActFinishTask" useGeneratedKeys="true" keyProperty="id">
+        insert into act_finish_task
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="proincId != null">proinc_id,</if>
+            <if test="actName != null">act_name,</if>
+            <if test="actUserId != null">act_user_id,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="inserter != null">inserter,</if>
+            <if test="insertTime != null">insert_time,</if>
+            <if test="updater != null">updater,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="applicant != null">applicant,</if>
+            <if test="flowSn != null">flow_sn,</if>
+            <if test="appliTime != null">appli_time,</if>
+            <if test="currentState != null">current_state,</if>
+            <if test="appliName != null">appli_name,</if>
+            <if test="comment != null">comment,</if>
+            <if test="fileUuid != null">file_uuid,</if>
+            <if test="signName != null">sign_name,</if>
+            <if test="msg != null">msg,</if>
+            <if test="selectMsg != null">select_msg,</if>
+            <if test="actTitle != null">act_title,</if>
+            <if test="key != null">`key`,</if>
+            <if test="currentFinishState != null">current_finish_state,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id,jdbcType=INTEGER},</if>
+            <if test="proincId != null">#{proincId,jdbcType=VARCHAR},</if>
+            <if test="actName != null">#{actName,jdbcType=VARCHAR},</if>
+            <if test="actUserId != null">#{actUserId,jdbcType=INTEGER},</if>
+            <if test="endTime != null">#{endTime,jdbcType=TIMESTAMP},</if>
+            <if test="inserter != null">#{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">#{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">#{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="applicant != null">#{applicant,jdbcType=VARCHAR},</if>
+            <if test="flowSn != null">#{flowSn,jdbcType=VARCHAR},</if>
+            <if test="appliTime != null">#{appliTime,jdbcType=TIMESTAMP},</if>
+            <if test="currentState != null">#{currentState,jdbcType=VARCHAR},</if>
+            <if test="appliName != null">#{appliName,jdbcType=VARCHAR},</if>
+            <if test="comment != null">#{comment,jdbcType=VARCHAR},</if>
+            <if test="fileUuid != null">#{fileUuid,jdbcType=VARCHAR},</if>
+            <if test="signName != null">#{signName,jdbcType=VARCHAR},</if>
+            <if test="msg != null">#{msg,jdbcType=VARCHAR},</if>
+            <if test="selectMsg != null">#{selectMsg,jdbcType=VARCHAR},</if>
+            <if test="actTitle != null">#{actTitle,jdbcType=VARCHAR},</if>
+            <if test="key != null">#{key,jdbcType=VARCHAR},</if>
+            <if test="currentFinishState != null">#{currentFinishState,jdbcType=VARCHAR},</if>
+
+        </trim>
+    </insert>
+
+    <!-- 删除个人已办理的任务 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from act_finish_task where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 批量删除个人已办理的任务 -->
+    <delete id="deleteByIds" parameterType="java.lang.Integer">
+        delete from act_finish_task where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 修改个人已办理的任务 -->
+    <update id="update" parameterType="com.bp.act.entity.ActFinishTask">
+        update act_finish_task
+        <set>
+            <if test="id != null">id = #{id,jdbcType=INTEGER},</if>
+            <if test="proincId != null">proinc_id = #{proincId,jdbcType=VARCHAR},</if>
+            <if test="actName != null">act_name = #{actName,jdbcType=VARCHAR},</if>
+            <if test="actUserId != null">act_user_id = #{actUserId,jdbcType=INTEGER},</if>
+            <if test="endTime != null">end_time = #{endTime,jdbcType=TIMESTAMP},</if>
+            <if test="inserter != null">inserter = #{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">updater = #{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="applicant != null">applicant = #{applicant,jdbcType=VARCHAR},</if>
+            <if test="flowSn != null">flow_sn = #{flowSn,jdbcType=VARCHAR},</if>
+            <if test="appliTime != null">appli_time = #{appliTime,jdbcType=TIMESTAMP},</if>
+            <if test="currentState != null">current_state = #{currentState,jdbcType=VARCHAR},</if>
+            <if test="appliName != null">appli_name = #{appliName,jdbcType=VARCHAR},</if>
+            <if test="comment != null">comment = #{comment,jdbcType=VARCHAR},</if>
+            <if test="fileUuid != null">file_uuid = #{fileUuid,jdbcType=VARCHAR},</if>
+            <if test="signName != null">sign_name = #{signName,jdbcType=VARCHAR},</if>
+            <if test="msg != null">msg = #{msg,jdbcType=VARCHAR},</if>
+            <if test="selectMsg != null">select_msg = #{selectMsg,jdbcType=VARCHAR},</if>
+            <if test="actTitle != null">act_title = #{actTitle,jdbcType=VARCHAR},</if>
+            <if test="key != null">`key` = #{key,jdbcType=VARCHAR},</if>
+            <if test="currentFinishState != null">`current_finish_state` = #{currentFinishState,jdbcType=VARCHAR},</if>
+
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateCurrentStateByPid">
+    update act_finish_task set current_finish_state=#{name} where proinc_id=#{pId}
+    </update>
+
+
+
+    <!-- 根据ID查询个人已办理的任务实体 -->
+    <select id="selectEntityById" resultMap="BaseResultMap">
+        select
+        *
+        from act_finish_task
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+
+    <!-- 带参数查询个人已办理的任务列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        *
+        from act_finish_task where 1=1 AND act_user_id=#{userId}
+
+        <if test="keyWord!=null and keyWord!=''">
+            and act_name like concat('%',#{keyWord,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="lcmc!=null and lcmc != ''">
+            and act_name like concat('%',#{lcmc,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="lcbt!=null and lcbt != ''">
+            and act_title like concat('%',#{lcbt,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="startTime!=null and startTime != ''">
+            and end_time<![CDATA[ >= ]]>#{startTime}
+        </if>
+        <if test="endTime!=null and endTime != ''">
+            and end_time<![CDATA[ <= ]]>#{endTime}
+        </if>
+        <if test="lclx!=null and lclx!=''">
+            and appli_name=#{lclx}
+        </if>
+
+        order by insert_time desc
+        <if test="page !=null  and limit !=null ">
+            limit ${page},${limit}
+        </if>
+
+    </select>
+
+    <!-- 根据pid获取任务办理人名称 -->
+    <select id="getRecordByPid" resultType="com.bp.act.entity.ActFinishTask">
+        select t1.*,t2.username as act_user_name, t2.name as xm from (select * from act_finish_task where proinc_id =
+        #{pid,jdbcType=VARCHAR} )t1
+        left join t_user t2 on t1.act_user_id = t2.id
+    </select>
+
+    <!--获取流程的审批节点数据,取得每个节点最新的意见信息:用于回显流程各个部门的审批意见-->
+    <select id="selectFinallyTaskByPid" resultType="com.bp.act.entity.ActFinishTask">
+        SELECT t2.* FROM (
+            SELECT max( id ) AS id FROM act_finish_task WHERE proinc_id = #{pid,jdbcType=VARCHAR} GROUP BY act_name ) t1
+	        LEFT JOIN (
+	            SELECT * FROM act_finish_task WHERE proinc_id = #{pid,jdbcType=VARCHAR}
+	    ) t2 ON t1.id = t2.id
+    </select>
+
+    <select id="selectListAll" resultType="com.bp.act.entity.ActFinishTask">
+        select
+        *
+        from act_finish_task where 1=1 AND act_user_id=#{userId}
+
+        <if test="keyWord!=null and keyWord!=''">
+            AND act_title like concat('%',#{keyWord,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="lcmc!=null and lcmc != ''">
+            and act_name like concat('%',#{lcmc,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="lcbt!=null and lcbt != ''">
+            and act_title like concat('%',#{lcbt,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="startTime!=null and startTime != ''">
+            and end_time<![CDATA[ >= ]]>#{startTime}
+        </if>
+        <if test="endTime!=null and endTime != ''">
+            and end_time<![CDATA[ <= ]]>#{endTime}
+        </if>
+        <if test="lclx!=null and lclx!=''">
+            and appli_name=#{lclx}
+        </if>
+        order by end_time desc
+    </select>
+
+</mapper>
+

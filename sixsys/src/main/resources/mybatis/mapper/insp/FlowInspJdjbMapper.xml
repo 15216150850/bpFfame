@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.insp.FlowInspJdjbMapper">
+
+
+
+    <!-- 带参数查询监督举报列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        a.uuid,b.xm as jcxm, c.name AS flow_state_name,a.jbnr,a.fj,a.sqr,a.sqrbm,a.clld,a.inserter,a.insert_time,a.updater,a.update_time,a.act_title,a.pid,a.remark,a.doc_state,a.flow_sn,a.flow_state
+        from flow_insp_jdjb a
+         left join base_police b on a.clld = b.jcbm
+        LEFT JOIN t_dictionary c ON a.flow_state = c.code AND c.type = 'flowState'
+         where 1=1
+
+        <if test="flowState != null and flowState!=''">
+            AND( a.flow_state=#{flowState}
+            <if test="flowState==2">
+                or a.flow_state=6 or a.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or a.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or a.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="keyWord !=null and keyWord!=''">
+            and (a.clld like concat('%',#{keyWord},'%') or b.xm  like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and a.inserter = #{currentUserId}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by a.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+</mapper>
+

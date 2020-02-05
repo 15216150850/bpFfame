@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.eco.GovZjhlMapper">
+
+
+    <!-- 带参数查询资金回笼列表 -->
+    <select id="selectList" resultType="java.util.Map">
+		select
+			fez.uuid, fez.gsmc, fez.gsfrdb, fez.gsjzr, fez.fpsm, fez.lxfs, fez.gsdz, fez.khyh, fez.sftjdwh,
+			fez.zh, fez.bz, fez.fj, fez.sqr, fez.sqrbm, fez.scddqr, fez.inserter, fez.insert_time,
+			fez.updater, fez.update_time, fez.fpkcsj, fez.hksfyhl, fez.hkhlsj, fez.act_title, fez.pid,
+			fez.remark, fez.doc_state, fez.flow_sn, fez.flow_state, b.name as flow_state_name
+		from flow_eco_zjhl fez
+		left join t_dictionary b on fez.flow_state = b.code and b.type = 'flowState' where 1=1
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and fez.inserter = #{currentUserId}
+        </if>
+        <if test="flowState != null and flowState!=''">
+            AND( fez.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fez.flow_state=6 or fez.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fez.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fez.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (fez.act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="gsmc != null and gsmc != ''">
+            and (fez.gsmc like concat('%',#{gsmc},'%'))
+        </if>
+        <if test="sqr != null and sqr != ''">
+            and (fez.sqr like concat('%',#{sqr},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fez.insert_time,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fez.insert_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by fez.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+	</select>
+
+</mapper>
+

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.NumberMapper">
+    <!-- 根据code查询流水号 -->
+    <select id="selectByCode" resultType="java.util.Map">
+        select
+        id,code,name,prefix,suffix,num,num_length,date_format,insert_time,inserter,updater,update_time
+        from t_number
+        where code = #{code}
+    </select>
+
+
+    <!-- 带参数查询流水号列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select *,
+        CASE date_format WHEN date_format='' or date_format is null
+        THEN
+        CONCAT(prefix, DATE_FORMAT(NOW(),date_format), LPAD((num), num_length, '0'),suffix)
+        ELSE
+        CONCAT(prefix, LPAD((num), num_length, '0'),suffix)
+        END
+        formatNum from t_number where 1=1
+        <if test="keyWord !=null and keyWord!=''">
+            and (code like concat('%',#{keyWord},'%') OR name LIKE concat('%',#{keyWord},'%'))
+        </if>
+        <if test="name !=null and name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="code !=null and code!=''">
+            and code like concat('%',#{code},'%')
+        </if>
+        <if test="prefix !=null and prefix!=''">
+            and prefix like concat('%',#{prefix},'%')
+        </if>
+        <if test="suffix !=null and suffix!=''">
+            and suffix like concat('%',#{suffix},'%')
+        </if>
+        <if test="num !=null and num!=''">
+            and num like concat('%',#{num},'%')
+        </if>
+        <if test="numLength !=null and numLength!=''">
+            and num_length = #{numLength}
+        </if>
+        <if test="num !=null and num!=''">
+            and num = #{num}
+        </if>
+        <if test="dateFormat !=null and dateFormat!=''">
+            and date_format like concat('%',#{dateFormat},'%')
+        </if>
+
+    </select>
+
+
+    <!-- 检查流水号 -->
+    <select id="checkNumber" resultType="java.lang.Integer">
+        select count(code) from t_number where code=#{code}
+        <if test="id!=null and id!=''">
+            and id !=#{id}
+        </if>
+    </select>
+
+    <!-- 调用存储过程获取流水号 -->
+    <parameterMap type="map" id="parameterMap">
+        <parameter property="idd" jdbcType="INTEGER" mode="IN"/>
+        <parameter property="newNum" jdbcType="VARCHAR" mode="OUT"/>
+    </parameterMap>
+    <select id="selectNum" parameterMap="parameterMap" statementType="CALLABLE" resultType="java.lang.String">
+        {call gen_number(?, ?)}
+    </select>
+
+</mapper>
+

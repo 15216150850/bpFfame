@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.insp.FlowInspJmthtzMapper">
+	
+	<!-- 带参数查询诫勉谈话通知列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+			uuid,fj.inserter,fj.insert_time,fj.updater,fj.update_time,act_title,fj.pid,fj.remark,doc_state,flow_sn,t5.name flow_state,xgwj,sqr,sqrbm,bh,t3.name dzb,thdxxm,thdxbm,thrxm,thrbm,sqldxm,sqldbm
+		from flow_insp_jmthtz fj
+        LEFT JOIN ser_dictionary t3 ON fj.dzb = t3.code AND t3.type = 'dzb'
+        LEFT JOIN t_dictionary t5 ON fj.flow_state = t5.code AND t5.type = 'flowState'
+        where 1=1
+        <if test="flowState != null and flowState!=''">
+            AND( fj.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fj.flow_state=6 or fj.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fj.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fj.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fj.insert_time,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fj.insert_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+</mapper>
+

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.insp.FlowInspDflzjsgzyttzsMapper">
+	
+	<!-- 带参数查询党风廉政建设工作约谈通知书列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+		a.*,b.xm as bytrname,c.xm as ytlxrname,d.name as flowStateName
+		from flow_insp_dflzjsgzyttzs a
+		 left join base_police b on a.bytrxm = b.jcbm
+		 left join base_police c on a.ytlxr = c.jcbm
+        left join t_dictionary d on a.flow_state = d.code and d.type = 'flowState'
+
+        where 1=1
+        <if test="flowState != null and flowState!=''">
+            AND( a.flow_state=#{flowState}
+            <if test="flowState==2">
+                or a.flow_state=6 or a.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or a.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or a.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and a.inserter = #{currentUserId}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by a.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+</mapper>
+

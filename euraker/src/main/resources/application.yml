@@ -1,0 +1,18 @@
+server:
+  port: 8010
+eureka:
+  instance:
+    hostname: localhost             #主机名，不配置的时候讲根据操作系统的主机名来获取
+    leaseRenewalIntervalInSeconds: 15
+  client:
+    register-with-eureka: false     #是否要将自身的实例信息注册到Eureka服务端
+    fetch-registry: false           #是否从Eureka服务端获取注册信息
+    service-url:                    #eureka注册中心的地址
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+#  server:
+#    # 关闭保护机制，默认true
+#    enable-self-preservation: true
+#    # 剔除失效服务间隔，默认60000
+#    eviction-interval-timer-in-ms: 3000
+
+

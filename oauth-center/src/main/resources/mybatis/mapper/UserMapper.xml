@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.oauth.mapper.UserInfoMapper">
+    <select id="findUserByUsername" resultType="java.util.Map">
+        SELECT a.*,b.tx,b.xzzw
+        from t_user a left join base_police b on a.username=b.jcbm where username=#{username}
+    </select>
+
+    <select id="findPermissionByUsername" resultType="java.util.Map" parameterType="java.util.Map">
+
+        <if test="username!='admin'">
+            (select s2.* from
+            (select * from t_role_res where role_code in(select role_code from t_user_roles  where user_id=#{userId}))s1 left join
+            (select id, name, url, pid, permission, sort_no, type,target  from t_res)s2 on s1.res_id = s2.id  where s2.id is not null)
+            union
+            (select s2.* from
+            (select * from t_user_res where user_id=#{userId})s1 left join
+            (select id, name, url, pid, permission, sort_no, type,target  from t_res)s2 on s1.res_id = s2.id  where s2.id is not null)
+            union
+            (select s2.* from
+            (select b.res_id from t_temp_res a left join t_temp_res_info b on a.id=b.pid where instr(user_id,#{userId})>0 and NOW()<![CDATA[ >= ]]> a.start_time and NOW()<![CDATA[ <= ]]>a.end_time)s1 left join
+            (select id, name, url, pid, permission, sort_no, type,target  from t_res)s2 on s1.res_id = s2.id where  s2.id is not null)
+        </if>
+        <if test='username=="admin"'>
+            select id, name, url, pid, permission, sort_no, type,target from t_res order by sort_no asc
+        </if>
+    </select>
+
+</mapper>

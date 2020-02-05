@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.DiagBehaveDailyGradeMapper">
+
+    <!--定时器调用每天自动生成日常计分统计数据-->
+    <update id="addDiagBehaveDailyGrade">
+        insert into
+        diag_behave_daily_grade(jdrybm,jdjgbm,bmbm,record_date,check_base_grade1,check_base_grade2,check_base_grade3,check_base_grade4,check_base_grade5,check_grade1,check_grade2,check_grade3,check_grade4,check_grade5,deduce_grade,reward_grade,punish_grade,sum_grade_day,outstanding_grade_day,inserter,insert_time)
+        select jdrybm,jdjgbm,bmbm,#{nowDate},
+        if(a.sfjsjcf=0,0,6),
+        if(a.sfjsjcf=0,0,1),
+        if(a.sfjsjcf=0,0,1),
+        if(a.sfjsjcf=0,0,2),
+        0,0,0,0,0,0,0,0,0,0,0,1,#{nowDate} from base_addicts a
+        where 1=1
+        and jdryzt in('01','02','03','04') and type='01'
+        and not exists(select jdrybm from diag_behave_daily_grade where
+        date_format(record_date,'%Y-%m-%d')=date_format(#{nowDate},'%Y-%m-%d') and a.jdrybm=jdrybm)
+        <if test="jdrybm !=null and jdrybm !=''">
+            and a.jdrybm=#{jdrybm}
+        </if>
+    </update>
+
+    <!--导入数据用-->
+    <update id="addDiagBehaveDailyGradeImport">
+        insert into
+        diag_behave_daily_grade(jdrybm,record_date,check_base_grade1,check_base_grade2,check_base_grade3,check_base_grade4,check_base_grade5,check_grade1,check_grade2,check_grade3,check_grade4,check_grade5,deduce_grade,reward_grade,punish_grade,sum_grade_day,outstanding_grade_day,inserter,insert_time)
+        values
+        <foreach item="i" index="index" collection="array"
+                 separator=",">
+            (
+            #{jdrybm},DATE_FORMAT(DATE_ADD(#{rsrq},INTERVAL #{i}
+            DAY),'%Y-%m-%d'),6,1,1,2,0,0,0,0,0,0,0,0,0,0,0,1,DATE_FORMAT(DATE_ADD(#{rsrq},INTERVAL #{i} DAY),'%Y-%m-%d')
+            )
+        </foreach>
+
+    </update>
+
+
+    <delete id="deleteByJdrybmAndRq">
+        delete from diag_behave_daily_grade
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        and date_format(record_date,'%Y-%m-%d')=date_format(#{rq,jdbcType=TIMESTAMP},'%Y-%m-%d')
+    </delete>
+
+    <!--更新日常计分统计 -->
+    <update id="updateCountDataByDay" parameterType="com.bp.sys.po.DiagBehaveDailyGrade">
+        update diag_behave_daily_grade
+        <set>
+            <!--<if test="id != null"> id = #{id,jdbcType=INTEGER}, </if>-->
+            <if test="jdrybm != null">jdrybm = #{jdrybm,jdbcType=VARCHAR},</if>
+            <if test="jdjgbm != null">jdjgbm = #{jdjgbm,jdbcType=VARCHAR},</if>
+            <if test="bmbm != null">bmbm = #{bmbm,jdbcType=VARCHAR},</if>
+            <if test="recordDate != null">record_date = #{recordDate,jdbcType=TIMESTAMP},</if>
+            <if test="checkBaseGrade1 != null">check_base_grade1 = #{checkBaseGrade1,jdbcType=DOUBLE},</if>
+            <if test="checkBaseGrade2 != null">check_base_grade2 = #{checkBaseGrade2,jdbcType=DOUBLE},</if>
+            <if test="checkBaseGrade3 != null">check_base_grade3 = #{checkBaseGrade3,jdbcType=DOUBLE},</if>
+            <if test="checkBaseGrade4 != null">check_base_grade4 = #{checkBaseGrade4,jdbcType=DOUBLE},</if>
+            <if test="checkBaseGrade5 != null">check_base_grade5 = #{checkBaseGrade5,jdbcType=DOUBLE},</if>
+            <if test="checkGrade1 != null">check_grade1 = #{checkGrade1,jdbcType=DOUBLE},</if>
+            <if test="checkGrade2 != null">check_grade2 = #{checkGrade2,jdbcType=DOUBLE},</if>
+            <if test="checkGrade3 != null">check_grade3 = #{checkGrade3,jdbcType=DOUBLE},</if>
+            <if test="checkGrade4 != null">check_grade4 = #{checkGrade4,jdbcType=DOUBLE},</if>
+            <if test="checkGrade5 != null">check_grade5 = #{checkGrade5,jdbcType=DOUBLE},</if>
+            <if test="deduceGrade != null">deduce_grade = #{deduceGrade,jdbcType=DOUBLE},</if>
+            <if test="rewardGrade != null">reward_grade = #{rewardGrade,jdbcType=DOUBLE},</if>
+            <if test="punishGrade != null">punish_grade = #{punishGrade,jdbcType=DOUBLE},</if>
+            <if test="sumGradeDay != null">sum_grade_day = #{sumGradeDay,jdbcType=DOUBLE},</if>
+            <if test="outstandingGradeDay != null">outstanding_grade_day = #{outstandingGradeDay,jdbcType=DOUBLE},</if>
+            <if test="inserter != null">inserter = #{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">updater = #{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+        </set>
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR} and
+        <!--jdjgbm = #{jdjgbm,jdbcType=VARCHAR} and
+        bmbm = #{bmbm,jdbcType=VARCHAR} and-->
+        date_format(record_date,'%Y-%m-%d')=date_format(#{recordDate,jdbcType=TIMESTAMP},'%Y-%m-%d')
+    </update>
+
+    <select id="selectByCountData" resultType="com.bp.sys.po.DiagBehaveDailyGrade">
+        select
+        *
+        from diag_behave_daily_grade
+        where
+        jdrybm = #{jdrybm,jdbcType=VARCHAR} and
+        <!--jdjgbm = #{jdjgbm,jdbcType=VARCHAR} and
+        bmbm = #{bmbm,jdbcType=VARCHAR} and-->
+        date_format(record_date,'%Y-%m-%d')=date_format(#{recordDate,jdbcType=TIMESTAMP},'%Y-%m-%d')
+    </select>
+
+    <!-- 带参数查询日常计分统计列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        a.*,b.xm,DATE_FORMAT(a.record_date,'%Y-%m-%d') AS recordDateStr,
+        (select GROUP_CONCAT(cast(`grade_item_code` as char(10)) SEPARATOR ',') from diag_behave_daily_record where date_format(record_date,'%Y-%m-%d')=date_format(a.record_date,'%Y-%m-%d') and jdrybm=a.jdrybm) as grade_item_codes
+        from diag_behave_daily_grade a left join base_addicts b on a.jdrybm=b.jdrybm
+        where 1=1 and jdryzt in('01','02','03','04') and type='01'
+        <if test="jdrybm!=null and jdrybm!=''">
+            and a.jdrybm=#{jdrybm}
+        </if>
+        <if test="year!=null and year!=''">
+            and date_format(a.record_date,'%Y')=#{year}
+        </if>
+        <if test="month!=null and month!=''">
+            and date_format(a.record_date,'%m')=#{month}
+        </if>
+        <if test="recordDate!=null and recordDate!=''">
+            and DATE_FORMAT(a.record_date,'%Y-%m-%d')=#{recordDate}
+        </if>
+    </select>
+
+
+    <select id="selectCountByJdry" resultType="java.util.Map">
+        select sum(check_base_grade1) cbg1,sum(check_base_grade2) cbg2,sum(check_base_grade3)
+        cbg3,sum(check_base_grade4) cbg4,sum(check_base_grade5) cbg5,sum(sum_grade_day) sgd
+        from diag_behave_daily_grade where jdrybm=#{jdrybm} and date_format(record_date,'%Y')=#{year} and
+        date_format(record_date,'%m')=#{month}
+    </select>
+
+    <select id="selectXz" resultType="java.util.Map">
+        select jdrybm,date_format(record_date,'%Y-%m-%d') as
+        rq,grade_type_code,grade_index_code,ifnull(sum(grade_change),0) as fs1,ifnull(sum(grade_change),0)+
+        case grade_index_code
+        when '01' then 6
+        when '02' then 1
+        when '03' then 1
+        when '04' then 2
+        when '05' then 0
+        end as fs2
+        from diag_behave_daily_record group by
+        jdrybm,date_format(record_date,'%Y-%m-%d'),grade_type_code,grade_index_code
+    </select>
+
+</mapper>
+

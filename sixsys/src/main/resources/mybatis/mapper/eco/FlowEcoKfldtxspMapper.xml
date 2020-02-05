@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.eco.GovKfldtxspMapper">
+
+
+
+    <!-- 带参数查询康复劳动调休审批列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        SELECT
+        a.*,
+        b.name AS flow_state_name
+        FROM flow_eco_kfldtxsp   a
+        LEFT JOIN t_dictionary b ON a.flow_state = b.code AND b.type = 'flowState'
+        WHERE 1=1
+
+        <if test="flowState != null and flowState!=''">
+            AND( a.flow_state=#{flowState}
+            <if test="flowState==2">
+                or a.flow_state=6 or flow_state=7
+            </if>
+            <if test="flowState==5">
+                or a.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or a.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="startTime !=null and startTime !=''">
+            and a.txrq &gt;= #{startTime}
+        </if>
+        <if test="endTime !=null and endTime !=''">
+            and a.txrq &lt; #{endTime}
+        </if>
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and a.inserter = #{currentUserId}
+        </if>
+        <if test="field == null">
+            order by a.insert_time desc
+        </if>
+        <if test="field !=null or order != null">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <!-- 根据id查询 -->
+    <select id="selectEntityById" resultType="com.bp.sixsys.po.eco.FlowEcoKfldtxsp">
+       select t1.*,d.bmmc as bmname from flow_eco_kfldtxsp t1
+		LEFT JOIN base_department d ON t1.bm = d.bmbm
+		where t1.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据Pid查询记录表实体 -->
+    <select id="findByPid" resultType="com.bp.sixsys.po.eco.FlowEcoKfldtxsp">
+       select t1.*,d.bmmc as bmname from flow_eco_kfldtxsp t1
+		LEFT JOIN base_department d ON t1.bm = d.bmbm
+		where t1.pid = #{pid,jdbcType=VARCHAR}
+    </select>
+
+</mapper>
+

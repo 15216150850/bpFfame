@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.RoleMapper">
+
+    <!-- 角色管理 -->
+    <select id="selectList" resultType="java.util.Map">
+        select id, name, code , status, remark, sort_no from t_role where code!='admin'
+        <if test="keyWord!=null and keyWord!=''">
+            and name like '%${keyWord}%'
+        </if>
+        order by sort_no asc
+    </select>
+
+    <!-- 检测角色名 -->
+    <select id="checkName" resultType="java.lang.Integer">
+        select count(id) from t_role where name=#{name}
+        <if test="id!=null and id !=''">
+            and id != #{id}
+        </if>
+    </select>
+
+    <!-- 检测角色编码 -->
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(id) from t_role where code=#{code}
+        <if test="id!=null and id !=''">
+            and id != #{id}
+        </if>
+    </select>
+
+    <!-- 删除角色资源 -->
+    <delete id="deleteRoleRes">
+        delete from t_role_res where role_code=#{roleCode}
+    </delete>
+
+    <!-- 批量删除角色资源 -->
+    <delete id="deleteRoleResByCodes" parameterType="java.lang.String">
+        delete from t_role_res where FIND_IN_SET(role_code,#{codes})>0
+    </delete>
+
+    <!-- 批量添加角色资源 -->
+    <insert id="insertRoleRes" parameterType="java.util.List">
+        insert into t_role_res (role_code,res_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            ( #{item.roleCode}, #{item.resId})
+        </foreach>
+    </insert>
+
+    <!-- 删除用户单独授权资源(功能授权) -->
+    <delete id="deleteUserRes">
+        delete from t_user_res where user_id=#{userId}
+    </delete>
+
+    <!-- 批量添加用户单独授权资源(功能授权) -->
+    <insert id="insertUserRes" parameterType="java.util.List">
+        insert into t_user_res (user_id,res_id,inserter,insert_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            ( #{item.userId}, #{item.resId},#{item.inserter},NOW())
+        </foreach>
+    </insert>
+
+    <!-- 查询角色url菜单:旧版 -->
+    <select id="selectRoleUrlRes" resultType="java.util.Map">
+        <if test="code != 'admin'">
+            select s2.* from
+            (select * from t_role_res where role_code=#{code})s1 left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res where type='url')s2 on s1.res_id = s2.id
+            where s2.pid=#{pid} order by sort_no asc
+        </if>
+        <!-- 超级管理员拥有所有权限 -->
+        <if test="code == 'admin'">
+            select id, name, url, pid, sort_no, type,target,icon from t_res where type='url' and pid=#{pid} order by
+            sort_no asc
+        </if>
+    </select>
+
+    <!-- 查询角色url菜单 -->
+    <select id="selectRoleUrlResByUserId" resultType="java.util.Map">
+        <if test="code != 'admin'">
+            (select s2.* from
+            (select * from t_role_res where role_code in(select role_code from t_user_roles where user_id=#{userId}))s1
+            left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res where type='url')s2 on s1.res_id = s2.id
+            where s2.pid=#{pid} order by sort_no asc)
+            union
+            (select s2.* from
+            (select * from t_user_res where user_id=#{userId})s1 left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res where type='url')s2 on s1.res_id = s2.id
+            where s2.pid=#{pid} order by sort_no asc)
+            union
+            (select s2.* from
+            (select b.res_id from t_temp_res a left join t_temp_res_info b on a.id=b.pid where
+            instr(user_id,#{userId})>0 and NOW()<![CDATA[ >= ]]> a.start_time and NOW()<![CDATA[ <= ]]>a.end_time)s1
+            left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res where type='url')s2 on s1.res_id = s2.id
+            where s2.pid=#{pid} order by sort_no asc)
+        </if>
+        <!-- 超级管理员拥有所有权限 -->
+        <if test="code == 'admin'">
+            select id, name, url, pid, sort_no, type,target,icon from t_res where type='url' and pid=#{pid} order by
+            sort_no asc
+        </if>
+    </select>
+
+    <!-- 根据CODE查询角色 -->
+    <select id="selectByRoleCode" resultType="com.bp.sys.po.Role">
+        select
+        id,name,code,status,remark,sort_no,inserter,insert_time,updater,update_time
+        from t_role
+        where code = #{code}
+    </select>
+
+    <!-- 根据用户查询角色 -->
+    <select id="selectByUserId" resultType="java.util.Map">
+        select
+        b.id,a.role_code,a.user_id,0 pid,b.name
+        from t_user_roles a left join t_role b on a.role_code=b.code
+        where 1=1
+        <if test="userId!=null">
+            and a.user_id = #{userId}
+        </if>
+    </select>
+    <select id="findByRolesUserId" resultType="java.util.Map">
+        SELECT a.*,b.name FROM `t_user_roles` a LEFT JOIN `t_role` b ON a.role_code= b.code WHERE user_id=#{id}
+
+    </select>
+    <select id="selectPerssionByUsername" resultType="java.util.Map">
+
+        (select s2.* from
+        (select * from t_role_res where role_code in(select a.role_code from t_user_roles a left join t_user b on
+        a.user_id= b.id where user_id=#{userId}))s1 left join
+        (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id is
+        not null AND s2.permission=#{permission})
+        union
+        (select s2.* from
+        (select * from t_user_res where user_id=#{userId})s1 left join
+        (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id is
+        not null AND s2.permission=#{permission})
+        union
+        (select s2.* from
+        (select b.res_id from t_temp_res a left join t_temp_res_info b on a.id=b.pid where instr(user_id,#{userId})>0
+        and NOW()<![CDATA[ >= ]]> a.start_time and NOW()<![CDATA[ <= ]]>a.end_time)s1 left join
+        (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id is
+        not null AND s2.permission=#{permission})
+
+    </select>
+
+    <!-- 批量添加用户角色 -->
+    <insert id="insertUserRoles" parameterType="java.util.List">
+        insert into t_user_roles (user_id,role_code,inserter,insert_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.userId},#{item.roleCode},#{item.inserter},NOW())
+        </foreach>
+    </insert>
+
+    <!-- 删除用户全部角色 -->
+    <delete id="deleteUserRoles">
+        delete from t_user_roles where user_id=#{userId}
+    </delete>
+
+    <!-- 删除角色下所有用户 -->
+    <delete id="deleteUserRolesByRoleCode">
+        delete from t_user_roles where role_code=#{roleCode}
+    </delete>
+
+    <!--查询部门与用户组织树-->
+    <select id="selectDeptAndUserTree" resultType="java.util.Map">
+        select t.* from (select dept_code AS id,sj_dept_code AS pId,0 AS userId,bmmc AS name,'' AS checked,bmbm,'true'
+        AS isParent from base_department <!--where length(dept_code)<![CDATA[ < ]]>6-->
+        UNION ALL
+        select uuid(),b.dept_code,a.id,name,if(c.id is null,'false','true'),'','false' from t_user a
+        left join base_department b on a.organization_code=b.bmbm
+        left join t_user_roles c on a.id=c.user_id and c.role_code=#{roleCode}
+        where organization_code is not null and organization_code!=''
+        and a.id !=1
+        ) t order by t.bmbm ASC
+    </select>
+
+    <!--查询部门与用户组织树，不带角色反选-->
+    <select id="selectUserTree" resultType="java.util.Map">
+        select t.* from(select dept_code AS id,sj_dept_code AS pId,uuid AS userId,bmmc AS name,bmbm,'true' AS isParent
+        from base_department
+        UNION ALL
+        select uuid(),b.dept_code,a.id,name,'','false' from t_user a
+        left join base_department b on a.organization_code=b.bmbm
+        where organization_code is not null and organization_code!=''
+        and a.id !=1
+        ) t order by t.bmbm ASC
+    </select>
+</mapper>

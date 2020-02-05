@@ -1,0 +1,1200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseAddictsMapper">
+
+    <!--复杂查询sql拼接-->
+    <sql id="select_condition">
+        <if test="conditionList !=null">
+            <foreach collection="conditionList" item="item">
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='equal'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} = #{item.conditionValueVal}
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='like'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} like concat('%',#{item.conditionValueVal},'%')
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='between'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} between ${item.conditionValueLeftVal} and
+                    ${item.conditionValueRightVal}
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='start'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} like concat(#{item.conditionValueVal},'%')
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='end'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} like concat('%',#{item.conditionValueVal})
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='unequal'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} &lt;&gt; #{item.conditionValueVal}
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='empty'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} IS NULL OR ${item.conditionFieldVal} != ''
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <!-- 查询在所戒毒人员下拉列表 -->
+    <select id="selectAddicts" resultType="java.util.Map">
+        select a.*,b.sjbmbm
+        from base_addicts a left join base_department b on a.bmbm = b.bmbm
+        where (jdrybm != '' and jdrybm is not null) and a.jdryzt in('01','02','03','04') and a.type='01'
+        <!--<if test="state != null and state != '' and state ==1">-->
+        <!--and (jdrybm != '' and jdrybm is not null)-->
+        <!--</if>-->
+        <if test="bmbm != null and bmbm != ''">
+            and a.bmbm like concat('',#{bmbm},'%')
+        </if>
+        <!-- 匹配分期情况 -->
+        <if test="fqqk != null and fqqk != ''">
+            and fqqk = #{fqqk}
+        </if>
+        <if test="xm != null and xm != ''">
+            and a.xm like concat('%',#{xm},'%')
+        </if>
+    </select>
+
+    <!-- 查询重点人员下拉列表 -->
+    <select id="selectAddictsZdryAll" resultType="java.util.Map">
+        select a.*,b.sjbmbm
+        from base_addicts a left join base_department b on a.bmbm = b.bmbm
+        where (jdrybm != '' and jdrybm is not null) and a.jdryzt in('01','02','03','04') and a.type='01'
+        <if test="sfwzdry!=null and sfwzdry!=''">
+            and (sfwzdry = '0' OR sfwzdry IS NULL)
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and ( a.bmbm = #{bmbm} or b.sjbmbm = #{bmbm})
+        </if>
+        <if test="fqqk != null and fqqk != ''">
+            and fqqk = #{fqqk}
+        </if>
+    </select>
+
+    <!-- 查询全部戒毒人员下拉列表 -->
+    <select id="selectAddictsAll" resultType="java.util.Map">
+        select a.*,b.sjbmbm
+        from base_addicts a left join base_department b on a.bmbm = b.bmbm
+        where (jdrybm != '' and jdrybm is not null) and a.type='01'
+        <!-- 匹配分期情况 -->
+        <if test="bmbm != null and bmbm != ''">
+            and ( a.bmbm = #{bmbm} or b.sjbmbm = #{bmbm})
+        </if>
+        <if test="fqqk != null and fqqk != ''">
+            and fqqk = #{fqqk}
+        </if>
+    </select>
+
+    <!-- 谈话教育查询戒毒人员下拉列表 -->
+    <select id="selectAddicts6" resultType="java.util.Map">
+        select a.*,b.sjbmbm from base_addicts a left join base_department b on a.bmbm = b.bmbm
+        where (jdrybm != '' and jdrybm is not null)
+        <!--and a.jdryzt in('01','02','03','04') and a.type='01'-->
+        <!--<if test="state != null and state != '' and state ==1">-->
+        <!--and (jdrybm != '' and jdrybm is not null)-->
+        <!--</if>-->
+        <!-- 匹配分期情况 -->
+        <if test="bmbm != null and bmbm != ''">
+            and ( a.bmbm = #{bmbm} or b.sjbmbm = #{bmbm})
+        </if>
+        <if test="fqqk != null and fqqk != ''">
+            and fqqk = #{fqqk}
+        </if>
+        or (a.bmbm = (select bmbm from base_department where bmmc = '六大队')
+        or b.sjbmbm = (select bmbm from base_department where bmmc = '六大队'))
+    </select>
+
+    <!-- 带参数查询戒毒人员表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,tz,jg,zylxrbz,ljhgs,lxbhgs,type,jdrybm,jdjgbm,bmbm,zp,xm,cym,xb,csrq,mz,jglx,jkzk,xx,sg,zjzl,zjhm,hyzk,zjxy,whcd,zzmm,hjszd,xjzdxxdz,ydwxxdz,ydwxxlxdh,zylxrxm,zylxrlxdh,zylxrgx,zylxrlxdz,qzgljdksrq,qzgljdjsrq,jdjgmc,sjdwmc,zacfcs,qjcs,qkcs,hcjs,rsrq,xds,rsqjyqk,lydpzl,xdfs,xdnx,sbybqk,bcqk,sfyxsfzjl,zywfss,sjry,swry,szqk,jdryzt,fqqk,gldj,sfycjcjjl,sfylwjl,glfs,zbjsrq,zbjsyy,byjsrq,byjsyy,qzjdwsh,dah,sfjsrs,qtjb,qtbl,sbybhm,dwxxdz,dwxxlxdh,qtzy,grjl,szdd,jdqk,qtdpmc,qjjds,zdpgsc,dtgkqkb,xdcyrds,jkzkjcb,qtfj,sfyjjgrwp,kfjb,sfyqj,yqjts,ysdqjts,sfydj,inserter,insert_time,updater,update_time,sfwzdry,lwzdryyy,zdlx,rcxwkhf
+        from base_addicts where 1=1
+        <!--筛选戒毒人员编码不为空的(入所审批中)-->
+        <if test="state != null and state != '' and state ==1">
+            and (jdrybm != '' and jdrybm is not null)
+        </if>
+    </select>
+
+    <!--根据戒毒人员编码查询戒毒人员信息-->
+    <select id="selectByJdrybm" resultType="com.bp.sys.po.BaseAddicts">
+        select
+        *
+        from base_addicts
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        AND jdryzt in('01','02','03','04')
+    </select>
+
+    <!--根据戒毒人员编码查询戒毒人员信息：查所有-->
+    <select id="selectByJdrybmAll" resultType="com.bp.sys.po.BaseAddicts">
+        select
+        *
+        from base_addicts
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+    </select>
+
+    <!--根据戒毒人员编码查询戒毒人员信息:返回连接过字典后的Map对象-->
+    <select id="selectMapByJdrybm" resultType="java.util.Map">
+        select t1.*,t2.name as xbName, t3.name as mzName, t4.name as xdfsName,t6.name AS jkzkName,t7.name AS
+        jglxName,t10.name AS zjzlName,
+        t8.name AS fqqkName,t9.name AS gldjName,t11.name AS kfjbName
+        from (
+        select t1.*,DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) qjsyqx,t5.jdjgmc AS orgJdjgmc from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1 and t1.jdryzt in('01','02','03','04')
+        <if test="jdrybm != null and jdrybm != ''">
+            and t1.jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        </if>
+        ) t1
+        LEFT JOIN ser_dictionary t2 ON t1.xb = t2.code AND t2.type='sex'
+        LEFT JOIN ser_dictionary t3 ON t1.mz = t3.code AND t3.type='folk'
+        LEFT JOIN ser_dictionary t4 ON t1.xdfs = t4.code AND t4.type='xdfs'
+        LEFT JOIN ser_dictionary t6 ON t1.jkzk = t6.code AND t6.type='jkzk'
+        LEFT JOIN ser_dictionary t7 ON t1.jglx = t7.code AND t7.type='jglxdm'
+        LEFT JOIN ser_dictionary t8 ON t1.fqqk = t8.code AND t8.type='fqqk'
+        LEFT JOIN ser_dictionary t9 ON t1.gldj = t9.code AND t9.type='gldj'
+        LEFT JOIN ser_dictionary t10 ON t1.zjzl = t10.code AND t10.type='zjzl'
+        LEFT JOIN ser_dictionary t11 ON t1.kfjb = t11.code AND t11.type='kfjb'
+    </select>
+
+    <!--根据戒毒人员编码及状态查询戒毒人员信息:返回连接过字典后的Map对象-->
+    <select id="selectMapByJdrybmAndJdryzt" resultType="java.util.Map">
+        select t1.*,t2.name as xbName, t3.name as mzName, t4.name as xdfsName,t6.name AS jkzkName,t7.name AS
+        jglxName,t10.name AS zjzlName,
+        t8.name AS fqqkName,t9.name AS gldjName,t11.name AS kfjbName
+        from (
+        select t1.*,DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) qjsyqx,t5.jdjgmc AS orgJdjgmc from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1
+        <if test="jdrybm != null and jdrybm != ''">
+            and t1.jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        </if>
+        <if test="jdryzt != null and jdryzt != ''">
+            and t1.jdryzt = #{jdryzt,jdbcType=VARCHAR}
+        </if>
+        ) t1
+        LEFT JOIN ser_dictionary t2 ON t1.xb = t2.code AND t2.type='sex'
+        LEFT JOIN ser_dictionary t3 ON t1.mz = t3.code AND t3.type='folk'
+        LEFT JOIN ser_dictionary t4 ON t1.xdfs = t4.code AND t4.type='xdfs'
+        LEFT JOIN ser_dictionary t6 ON t1.jkzk = t6.code AND t6.type='jkzk'
+        LEFT JOIN ser_dictionary t7 ON t1.jglx = t7.code AND t7.type='jglxdm'
+        LEFT JOIN ser_dictionary t8 ON t1.fqqk = t8.code AND t8.type='fqqk'
+        LEFT JOIN ser_dictionary t9 ON t1.gldj = t9.code AND t9.type='gldj'
+        LEFT JOIN ser_dictionary t10 ON t1.zjzl = t10.code AND t10.type='zjzl'
+        LEFT JOIN ser_dictionary t11 ON t1.kfjb = t11.code AND t11.type='kfjb'
+    </select>
+
+    <!--根据戒毒人员编码查询戒毒人员信息-->
+    <select id="selectZdryByJdrybm" resultType="java.util.Map">
+        select
+        a.*,b.zdrylx,b.gkcs
+        from base_addicts a
+        left join gov_zdryxx b on a.jdrybm=b.jdrybm
+        where a.jdrybm = #{jdrybm,jdbcType=VARCHAR}
+    </select>
+
+    <!--查询所有编码戒毒人员-->
+    <select id="selectByJdrybms" resultType="com.bp.sys.po.BaseAddicts">
+        select
+        *
+        from base_addicts
+        where jdrybm in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectListByType" resultType="java.util.Map">
+        select t1.*,t2.name as xb_name, t3.name as mz_name, t4.name as xdfs_name,t6.name AS jkzk_name,t7.name AS
+        jglx_name,t10.name AS zjzl_name,
+        t8.name AS fqqk_name,t9.name AS gldj_name,t11.name AS kfjb_name
+        from (
+        select t1.*,DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) qjsyqx,t5.jdjgmc AS orgJdjgmc from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1 and t1.jdryzt in('01','02','03','04') and t1.type='01'
+        <if test="keyWord != null and keyWord != ''">
+            and (t1.xm like concat('%',#{keyWord},'%') or t1.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="jdrybm != null and jdrybm != ''">
+            and t1.jdrybm like concat('%',#{jdrybm},'%')
+        </if>
+        <if test="szdwmc != null and szdwmc != ''">
+            and t1.szdwmc like concat('%',#{szdwmc},'%')
+        </if>
+        <if test="xm != null and xm != ''">
+            and t1.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="xb != null and xb != ''">
+            and t1.xb like concat('%',#{xb},'%')
+        </if>
+        <if test="jdjgmc != null and jdjgmc != ''">
+            and t5.jdjgmc like concat('%',#{jdjgmc},'%')
+        </if>
+        <if test="csrq != null and csrq != ''">
+            and t1.csrq = #{csrq}
+        </if>
+        <if test="csrqStart != null and csrqStart != ''">
+            and t1.csrq <![CDATA[ >= ]]>#{csrqStart}
+        </if>
+        <if test="csrqEnd != null and csrqEnd != ''">
+            and t1.csrq <![CDATA[ <= ]]>#{csrqEnd}
+        </if>
+        <if test="mz != null and mz != ''">
+            and t1.mz = #{mz}
+        </if>
+        <if test="jglx != null and jglx != ''">
+            and t1.jglx = #{jglx}
+        </if>
+        <if test="whcd != null and whcd != ''">
+            and t1.whcd = #{whcd}
+        </if>
+        <if test="xdnx != null and xdnx != ''">
+            and t1.xdnx = #{xdnx}
+        </if>
+        <if test="sfyxsfzjl != null and sfyxsfzjl != ''">
+            and t1.sfyxsfzjl = #{sfyxsfzjl}
+        </if>
+        <if test="swry != null and swry != ''">
+            and t1.swry = #{swry}
+        </if>
+        <if test="sjry != null and sjry != ''">
+            and t1.sjry = #{sjry}
+        </if>
+        <!--<if test="jdjgmc != null and jdjgmc != ''">-->
+        <!--and t1.jdjgmc = #{jdjgmc}-->
+        <!--</if>-->
+        <if test="rsrqMin != null and rsrqMin != ''">
+            and t1.rsrq &gt; #{rsrqMin}
+        </if>
+        <if test="rsrqMax != null and rsrqMax != ''">
+            and t1.rsrq &lt; #{rsrqMax}
+        </if>
+        <if test="jdryzt != null and jdryzt != ''">
+            and t1.jdryzt = #{jdryzt}
+        </if>
+        <if test="szdd != null and szdd != ''">
+            and t1.szdd like concat('%',#{szdd},'%')
+        </if>
+        <if test="zjhm != null and zjhm != ''">
+            and t1.zjhm like concat('%',#{zjhm},'%')
+        </if>
+        <if test="rsrqStart != null and rsrqStart != ''">
+            and t1.rsrq <![CDATA[ >= ]]>#{rsrqStart}
+        </if>
+        <if test="rsrqEnd != null and rsrqEnd != ''">
+            and t1.rsrq <![CDATA[ <= ]]>#{rsrqEnd}
+        </if>
+        <if test="dah != null and dah != ''">
+            and t1.dah =#{dah}
+        </if>
+        <!--<if test="sfydj != null and sfydj != ''">-->
+        <!--and t1.sfydj =#{sfydj}-->
+        <!--</if>-->
+        <!--筛选戒毒人员编码不为空的(入所审批中)-->
+        <if test="state != null and state != '' and state ==1">
+            and (t1.jdrybm != '' and t1.jdrybm is not null)
+        </if>
+        <!-- 匹配分期情况 -->
+        <if test="fqqk != null and fqqk != ''">
+            and t1.fqqk = #{fqqk}
+        </if>
+        <if test="kfjb != null and kfjb != ''">
+            and t1.kfjb = #{kfjb}
+        </if>
+        <!-- 匹配管理等级 -->
+        <if test="gldj != null and gldj != ''">
+            and t1.gldj = #{gldj}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+            <!--档案补录追加条件，只有在生理脱毒，教育适应区可补录-->
+            <if test="flag!=null and flag!=''">
+                and (t1.fqqk='01' or t1.fqqk='02')
+            </if>
+        </if>
+        <if test="bmbmChange != null and bmbmChange != ''">
+            and t1.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        <if test='birthday=="1"'>
+            and DATE_FORMAT(t1.csrq,'%m')=DATE_FORMAT(NOW(),'%m')
+        </if>
+        <!-- 戒毒人员姓名或编码精准查询（省平台功能，后续会挪走） -->
+        <if test="provinceKeyWord != null and provinceKeyWord != ''">
+            and (t1.xm = #{provinceKeyWord} or t1.jdrybm = #{provinceKeyWord})
+        </if>
+        ) t1
+        LEFT JOIN ser_dictionary t2 ON t1.xb = t2.code AND t2.type='sex'
+        LEFT JOIN ser_dictionary t3 ON t1.mz = t3.code AND t3.type='folk'
+        LEFT JOIN ser_dictionary t4 ON t1.xdfs = t4.code AND t4.type='xdfs'
+        LEFT JOIN ser_dictionary t6 ON t1.jkzk = t6.code AND t6.type='jkzk'
+        LEFT JOIN ser_dictionary t7 ON t1.jglx = t7.code AND t7.type='jglxdm'
+        LEFT JOIN ser_dictionary t8 ON t1.fqqk = t8.code AND t8.type='fqqk'
+        LEFT JOIN ser_dictionary t9 ON t1.gldj = t9.code AND t9.type='gldj'
+        LEFT JOIN ser_dictionary t10 ON t1.zjzl = t10.code AND t10.type='zjzl'
+        LEFT JOIN ser_dictionary t11 ON t1.kfjb = t11.code AND t11.type='kfjb'
+        where 1=1
+        <include refid="select_condition"></include>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by jdryzt DESC,qjsyqx DESC
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <select id="selectShowList" resultType="java.util.Map">
+        select t1.*,t2.name as xb_name, t3.name as mz_name, t4.name as xdfs_name,t6.name AS jkzk_name,t7.name AS
+        jglx_name,t10.name AS zjzlName,
+        t8.name AS fqqkName,t9.name AS gldj_name,t11.name AS kfjb_name,t12.name AS jdryzt_name
+        from (
+        select t1.*,DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) qjsyqx,t5.jdjgmc AS orgJdjgmc,date_format(gc.cssj,'%Y-%m-%d') AS cssj from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        LEFT JOIN gov_csxx gc on t1.jdrybm=gc.jdrybm
+        where 1=1 and t1.jdryzt <![CDATA[>]]>4 and t1.type='01'
+        <if test="keyWord != null and keyWord != ''">
+            and (t1.xm like concat('%',#{keyWord},'%') or t1.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="jdrybm != null and jdrybm != ''">
+            and t1.jdrybm like concat('%',#{jdrybm},'%')
+        </if>
+        <if test="szdwmc != null and szdwmc != ''">
+            and t1.szdwmc like concat('%',#{szdwmc},'%')
+        </if>
+        <if test="xm != null and xm != ''">
+            and t1.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="xb != null and xb != ''">
+            and t1.xb like concat('%',#{xb},'%')
+        </if>
+        <if test="jdjgmc != null and jdjgmc != ''">
+            and t5.jdjgmc like concat('%',#{jdjgmc},'%')
+        </if>
+        <if test="csrq != null and csrq != ''">
+            and t1.csrq = #{csrq}
+        </if>
+        <if test="csrqStart != null and csrqStart != ''">
+            and t1.csrq <![CDATA[ >= ]]>#{csrqStart}
+        </if>
+        <if test="csrqEnd != null and csrqEnd != ''">
+            and t1.csrq <![CDATA[ <= ]]>#{csrqEnd}
+        </if>
+        <if test="mz != null and mz != ''">
+            and t1.mz = #{mz}
+        </if>
+        <if test="jglx != null and jglx != ''">
+            and t1.jglx = #{jglx}
+        </if>
+        <if test="whcd != null and whcd != ''">
+            and t1.whcd = #{whcd}
+        </if>
+        <if test="xdnx != null and xdnx != ''">
+            and t1.xdnx = #{xdnx}
+        </if>
+        <if test="sfyxsfzjl != null and sfyxsfzjl != ''">
+            and t1.sfyxsfzjl = #{sfyxsfzjl}
+        </if>
+        <if test="swry != null and swry != ''">
+            and t1.swry = #{swry}
+        </if>
+        <if test="sjry != null and sjry != ''">
+            and t1.sjry = #{sjry}
+        </if>
+        <!--<if test="jdjgmc != null and jdjgmc != ''">-->
+        <!--and t1.jdjgmc = #{jdjgmc}-->
+        <!--</if>-->
+        <if test="rsrqMin != null and rsrqMin != ''">
+            and t1.rsrq &gt; #{rsrqMin}
+        </if>
+        <if test="rsrqMax != null and rsrqMax != ''">
+            and t1.rsrq &lt; #{rsrqMax}
+        </if>
+        <if test="jdryzt != null and jdryzt != ''">
+            and t1.jdryzt = #{jdryzt}
+        </if>
+        <if test="szdd != null and szdd != ''">
+            and t1.szdd like concat('%',#{szdd},'%')
+        </if>
+        <if test="zjhm != null and zjhm != ''">
+            and t1.zjhm like concat('%',#{zjhm},'%')
+        </if>
+        <if test="rsrqStart != null and rsrqStart != ''">
+            and t1.rsrq <![CDATA[ >= ]]>#{rsrqStart}
+        </if>
+        <if test="rsrqEnd != null and rsrqEnd != ''">
+            and t1.rsrq <![CDATA[ <= ]]>#{rsrqEnd}
+        </if>
+        <if test="dah != null and dah != ''">
+            and t1.dah =#{dah}
+        </if>
+        <!--<if test="sfydj != null and sfydj != ''">-->
+        <!--and t1.sfydj =#{sfydj}-->
+        <!--</if>-->
+        <!--筛选戒毒人员编码不为空的(入所审批中)-->
+        <if test="state != null and state != '' and state ==1">
+            and (t1.jdrybm != '' and t1.jdrybm is not null)
+        </if>
+        <!-- 匹配分期情况 -->
+        <if test="fqqk != null and fqqk != ''">
+            and t1.fqqk = #{fqqk}
+        </if>
+        <if test="kfjb != null and kfjb != ''">
+            and t1.kfjb = #{kfjb}
+        </if>
+        <!-- 匹配管理等级 -->
+        <if test="gldj != null and gldj != ''">
+            and t1.gldj = #{gldj}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+            <!--档案补录追加条件，只有在生理脱毒，教育适应区可补录-->
+            <if test="flag!=null and flag!=''">
+                and (t1.fqqk='01' or t1.fqqk='02')
+            </if>
+        </if>
+        <if test="bmbmChange != null and bmbmChange != ''">
+            and t1.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        ) t1
+        LEFT JOIN ser_dictionary t2 ON t1.xb = t2.code AND t2.type='sex'
+        LEFT JOIN ser_dictionary t3 ON t1.mz = t3.code AND t3.type='folk'
+        LEFT JOIN ser_dictionary t4 ON t1.xdfs = t4.code AND t4.type='xdfs'
+        LEFT JOIN ser_dictionary t6 ON t1.jkzk = t6.code AND t6.type='jkzk'
+        LEFT JOIN ser_dictionary t7 ON t1.jglx = t7.code AND t7.type='jglxdm'
+        LEFT JOIN ser_dictionary t8 ON t1.fqqk = t8.code AND t8.type='fqqk'
+        LEFT JOIN ser_dictionary t9 ON t1.gldj = t9.code AND t9.type='gldj'
+        LEFT JOIN ser_dictionary t10 ON t1.zjzl = t10.code AND t10.type='zjzl'
+        LEFT JOIN ser_dictionary t11 ON t1.kfjb = t11.code AND t11.type='kfjb'
+        LEFT JOIN ser_dictionary t12 ON t1.jdryzt = t12.code AND t12.type='jdryzt'
+        where 1=1
+        <include refid="select_condition"></include>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by qjsyqx DESC
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <!-- 带参数查询戒毒人员表列表 -->
+    <select id="selectShowListCount" resultType="java.lang.Long">
+        select count(*) from (
+        select t1.*,t2.name as xbName, t3.name as mzName, t4.name as xdfsName,t6.name AS jkzkName,t7.name AS
+        jglxName,t10.name AS zjzlName,
+        t8.name AS fqqkName,t9.name AS gldjName
+        from (
+        select t1.*,DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) qjsyqx,t5.jdjgmc AS orgJdjgmc from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        LEFT JOIN gov_csxx gc on t1.jdrybm=gc.jdrybm
+        where 1=1 and t1.jdryzt <![CDATA[>]]>4 and t1.type='01'
+        <if test="keyWord != null and keyWord != ''">
+            and (t1.xm like concat('%',#{keyWord},'%') or t1.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="jdrybm != null and jdrybm != ''">
+            and t1.jdrybm like concat('%',#{jdrybm},'%')
+        </if>
+        <if test="szdwmc != null and szdwmc != ''">
+            and t1.szdwmc like concat('%',#{szdwmc},'%')
+        </if>
+        <if test="xm != null and xm != ''">
+            and t1.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="xb != null and xb != ''">
+            and t1.xb like concat('%',#{xb},'%')
+        </if>
+        <if test="jdjgmc != null and jdjgmc != ''">
+            and t5.jdjgmc like concat('%',#{jdjgmc},'%')
+        </if>
+        <if test="csrq != null and csrq != ''">
+            and t1.csrq = #{csrq}
+        </if>
+        <if test="csrqStart != null and csrqStart != ''">
+            and t1.csrq <![CDATA[ >= ]]>#{csrqStart}
+        </if>
+        <if test="csrqEnd != null and csrqEnd != ''">
+            and t1.csrq <![CDATA[ <= ]]>#{csrqEnd}
+        </if>
+        <if test="mz != null and mz != ''">
+            and t1.mz = #{mz}
+        </if>
+        <if test="jglx != null and jglx != ''">
+            and t1.jglx = #{jglx}
+        </if>
+        <if test="whcd != null and whcd != ''">
+            and t1.whcd = #{whcd}
+        </if>
+        <if test="xdnx != null and xdnx != ''">
+            and t1.xdnx = #{xdnx}
+        </if>
+        <if test="sfyxsfzjl != null and sfyxsfzjl != ''">
+            and t1.sfyxsfzjl = #{sfyxsfzjl}
+        </if>
+        <if test="swry != null and swry != ''">
+            and t1.swry = #{swry}
+        </if>
+        <if test="sjry != null and sjry != ''">
+            and t1.sjry = #{sjry}
+        </if>
+        <!--<if test="jdjgmc != null and jdjgmc != ''">-->
+        <!--and t1.jdjgmc = #{jdjgmc}-->
+        <!--</if>-->
+        <if test="rsrqMin != null and rsrqMin != ''">
+            and t1.rsrq &gt; #{rsrqMin}
+        </if>
+        <if test="rsrqMax != null and rsrqMax != ''">
+            and t1.rsrq &lt; #{rsrqMax}
+        </if>
+        <if test="jdryzt != null and jdryzt != ''">
+            and t1.jdryzt = #{jdryzt}
+        </if>
+        <if test="szdd != null and szdd != ''">
+            and t1.szdd like concat('%',#{szdd},'%')
+        </if>
+        <if test="zjhm != null and zjhm != ''">
+            and t1.zjhm like concat('%',#{zjhm},'%')
+        </if>
+        <if test="rsrqStart != null and rsrqStart != ''">
+            and t1.rsrq <![CDATA[ >= ]]>#{rsrqStart}
+        </if>
+        <if test="rsrqEnd != null and rsrqEnd != ''">
+            and t1.rsrq <![CDATA[ <= ]]>#{rsrqEnd}
+        </if>
+        <if test="dah != null and dah != ''">
+            and t1.dah =#{dah}
+        </if>
+        <!--<if test="sfydj != null and sfydj != ''">-->
+        <!--and t1.sfydj =#{sfydj}-->
+        <!--</if>-->
+        <!--筛选戒毒人员编码不为空的(入所审批中)-->
+        <if test="state != null and state != '' and state ==1">
+            and (t1.jdrybm != '' and t1.jdrybm is not null)
+        </if>
+        <!-- 匹配分期情况 -->
+        <if test="fqqk != null and fqqk != ''">
+            and t1.fqqk = #{fqqk}
+        </if>
+        <!-- 匹配管理等级 -->
+        <if test="gldj != null and gldj != ''">
+            and t1.gldj = #{gldj}
+        </if>
+        <if test="kfjb != null and kfjb != ''">
+            and t1.kfjb = #{kfjb}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+            <if test="flag!=null and flag!=''">
+                and (t1.fqqk='01' or t1.fqqk='02')
+            </if>
+        </if>
+        <if test="bmbmChange != null and bmbmChange != ''">
+            and t1.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        <!-- 戒毒人员姓名或编码精准查询（省平台功能，后续会挪走） -->
+        <if test="provinceKeyWord != null and provinceKeyWord != ''">
+            and (t1.xm = #{provinceKeyWord} or t1.jdrybm = #{provinceKeyWord})
+        </if>
+        order by DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) ASC
+        ) t1
+        LEFT JOIN ser_dictionary t2 ON t1.xb = t2.code AND t2.type='sex'
+        LEFT JOIN ser_dictionary t3 ON t1.mz = t3.code AND t3.type='folk'
+        LEFT JOIN ser_dictionary t4 ON t1.xdfs = t4.code AND t4.type='xdfs'
+        LEFT JOIN ser_dictionary t6 ON t1.jkzk = t6.code AND t6.type='jkzk'
+        LEFT JOIN ser_dictionary t7 ON t1.jglx = t7.code AND t7.type='jglxdm'
+        LEFT JOIN ser_dictionary t8 ON t1.fqqk = t8.code AND t8.type='fqqk'
+        LEFT JOIN ser_dictionary t9 ON t1.gldj = t9.code AND t9.type='gldj'
+        LEFT JOIN ser_dictionary t10 ON t1.zjzl = t10.code AND t10.type='zjzl'
+        LEFT JOIN ser_dictionary t11 ON t1.kfjb = t11.code AND t11.type='kfjb'
+        LEFT JOIN ser_dictionary t12 ON t1.jdryzt = t12.code AND t12.type='jdryzt'
+        )t
+    </select>
+    <!--获取戒毒人员康复档案列表-->
+    <select id="selectKfdaList" resultType="java.util.Map">
+        select t1.*,t2.name as xbName, t3.name as mzName, t4.name as xdfsName,t6.name AS jkzkName,t7.name AS
+        jglxName,t10.name AS zjzlName,
+        t8.name AS fqqkName,t9.name AS gldjName,(select cuuid from rt_jdryxlkhpg where jdrybm=t1.jdrybm ORDER BY
+        insert_time DESC LIMIT 0,1) AS cuuid
+        from (
+        select t1.*,DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) qjsyqx,t5.jdjgmc AS orgJdjgmc from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1
+
+        <if test="bmbmChange != null and bmbmChange != ''">
+            and t1.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and t1.xm like concat('%',#{keyWord},'%')
+        </if>
+        <if test="jdrybm != null and jdrybm != ''">
+            and t1.jdrybm like concat('%',#{jdrybm},'%')
+        </if>
+        <if test="szdwmc != null and szdwmc != ''">
+            and t1.szdwmc like concat('%',#{szdwmc},'%')
+        </if>
+        <if test="xm != null and xm != ''">
+            and t1.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="xb != null and xb != ''">
+            and t1.xb like concat('%',#{xb},'%')
+        </if>
+        <if test="jdjgmc != null and jdjgmc != ''">
+            and t5.jdjgmc like concat('%',#{jdjgmc},'%')
+        </if>
+        <if test="csrq != null and csqr != ''">
+            and t1.csrq = #{csrq}
+        </if>
+        <if test="mz != null and mz != ''">
+            and t1.mz = #{mz}
+        </if>
+        <if test="jglx != null and jglx != ''">
+            and t1.jglx = #{jglx}
+        </if>
+        <if test="whcd != null and whcd != ''">
+            and t1.whcd = #{whcd}
+        </if>
+        <if test="xdlx != null and xdlx != ''">
+            and t1.xdlx = #{xdlx}
+        </if>
+        <if test="sfyxsfzjl != null and sfyxsfzjl != ''">
+            and t1.sfyxsfzjl = #{sfyxsfzjl}
+        </if>
+        <!--<if test="jdjgmc != null and jdjgmc != ''">-->
+        <!--and t1.jdjgmc = #{jdjgmc}-->
+        <!--</if>-->
+        <if test="rsrqMin != null and rsrqMin != ''">
+            and t1.rsrq &gt; #{rsrqMin}
+        </if>
+        <if test="rsrqMax != null and rsrqMax != ''">
+            and t1.rsrq &lt; #{rsrqMax}
+        </if>
+        <if test="jdryzt != null and jdryzt != ''">
+            and t1.jdryzt = #{jdryzt}
+        </if>
+        <if test="szdd != null and szdd != ''">
+            and t1.szdd like concat('%',#{szdd},'%')
+        </if>
+        <if test="zjhm != null and zjhm != ''">
+            and t1.zjhm like concat('%',#{zjhm},'%')
+        </if>
+        <if test="rsrqStart != null and rsrqStart != ''">
+            and t1.rsrq <![CDATA[ >= ]]>#{rsrqStart}
+        </if>
+        <if test="rsrqEnd != null and rsrqEnd != ''">
+            and t1.rsrq <![CDATA[ <= ]]>#{rsrqEnd}
+        </if>
+        <if test="dah != null and dah != ''">
+            and t1.dah =#{dah}
+        </if>
+        <!--<if test="sfydj != null and sfydj != ''">-->
+        <!--and t1.sfydj =#{sfydj}-->
+        <!--</if>-->
+        <!--筛选戒毒人员编码不为空的(入所审批中)-->
+        <if test="state != null and state != '' and state ==1">
+            and (t1.jdrybm != '' and t1.jdrybm is not null)
+        </if>
+        <!-- 匹配分期情况 -->
+        <if test="fqqk != null and fqqk != ''">
+            and t1.fqqk = #{fqqk}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+        </if>
+        <if test="bmbmChange != null and bmbmChange != ''">
+            and t1.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        order by DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) ASC
+
+        ) t1
+        LEFT JOIN ser_dictionary t2 ON t1.xb = t2.code AND t2.type='sex'
+        LEFT JOIN ser_dictionary t3 ON t1.mz = t3.code AND t3.type='folk'
+        LEFT JOIN ser_dictionary t4 ON t1.xdfs = t4.code AND t4.type='xdfs'
+        LEFT JOIN ser_dictionary t6 ON t1.jkzk = t6.code AND t6.type='jkzk'
+        LEFT JOIN ser_dictionary t7 ON t1.jglx = t7.code AND t7.type='jglxdm'
+        LEFT JOIN ser_dictionary t8 ON t1.fqqk = t8.code AND t8.type='fqqk'
+        LEFT JOIN ser_dictionary t9 ON t1.gldj = t9.code AND t9.type='gldj'
+        LEFT JOIN ser_dictionary t10 ON t1.zjzl = t10.code AND t10.type='zjzl'
+
+    </select>
+
+    <!-- 获取戒毒人员康复档案列表 -->
+    <select id="selectKfdaListCount" resultType="java.lang.Long">
+        select count(*) from (
+        select t1.*,t2.name as xbName, t3.name as mzName, t4.name as xdfsName,t6.name AS jkzkName,t7.name AS
+        jglxName,t10.name AS zjzlName,
+        t8.name AS fqqkName,t9.name AS gldjName
+        from (
+        select t1.*,DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) qjsyqx,t5.jdjgmc AS orgJdjgmc from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1
+        <if test="bmbmChange != null and bmbmChange != ''">
+            and t1.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and t1.xm like concat('%',#{keyWord},'%')
+        </if>
+        <if test="jdrybm != null and jdrybm != ''">
+            and t1.jdrybm like concat('%',#{jdrybm},'%')
+        </if>
+        <if test="szdwmc != null and szdwmc != ''">
+            and t1.szdwmc like concat('%',#{szdwmc},'%')
+        </if>
+        <if test="xm != null and xm != ''">
+            and t1.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="xb != null and xb != ''">
+            and t1.xb like concat('%',#{xb},'%')
+        </if>
+        <if test="jdjgmc != null and jdjgmc != ''">
+            and t5.jdjgmc like concat('%',#{jdjgmc},'%')
+        </if>
+        <if test="csrq != null and csqr != ''">
+            and t1.csrq = #{csrq}
+        </if>
+        <if test="mz != null and mz != ''">
+            and t1.mz = #{mz}
+        </if>
+        <if test="jglx != null and jglx != ''">
+            and t1.jglx = #{jglx}
+        </if>
+        <if test="whcd != null and whcd != ''">
+            and t1.whcd = #{whcd}
+        </if>
+        <if test="xdlx != null and xdlx != ''">
+            and t1.xdlx = #{xdlx}
+        </if>
+        <if test="sfyxsfzjl != null and sfyxsfzjl != ''">
+            and t1.sfyxsfzjl = #{sfyxsfzjl}
+        </if>
+        <!--<if test="jdjgmc != null and jdjgmc != ''">-->
+        <!--and t1.jdjgmc = #{jdjgmc}-->
+        <!--</if>-->
+        <if test="rsrqMin != null and rsrqMin != ''">
+            and t1.rsrq &gt; #{rsrqMin}
+        </if>
+        <if test="rsrqMax != null and rsrqMax != ''">
+            and t1.rsrq &lt; #{rsrqMax}
+        </if>
+        <if test="jdryzt != null and jdryzt != ''">
+            and t1.jdryzt = #{jdryzt}
+        </if>
+        <if test="szdd != null and szdd != ''">
+            and t1.szdd like concat('%',#{szdd},'%')
+        </if>
+        <if test="zjhm != null and zjhm != ''">
+            and t1.zjhm like concat('%',#{zjhm},'%')
+        </if>
+        <if test="rsrqStart != null and rsrqStart != ''">
+            and t1.rsrq <![CDATA[ >= ]]>#{rsrqStart}
+        </if>
+        <if test="rsrqEnd != null and rsrqEnd != ''">
+            and t1.rsrq <![CDATA[ <= ]]>#{rsrqEnd}
+        </if>
+        <if test="dah != null and dah != ''">
+            and t1.dah =#{dah}
+        </if>
+        <!--<if test="sfydj != null and sfydj != ''">-->
+        <!--and t1.sfydj =#{sfydj}-->
+        <!--</if>-->
+        <!--筛选戒毒人员编码不为空的(入所审批中)-->
+        <if test="state != null and state != '' and state ==1">
+            and (t1.jdrybm != '' and t1.jdrybm is not null)
+        </if>
+        <!-- 匹配分期情况 -->
+        <if test="fqqk != null and fqqk != ''">
+            and t1.fqqk = #{fqqk}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+        </if>
+        <if test="bmbmChange != null and bmbmChange != ''">
+            and t1.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        order by DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) ASC
+        ) t1
+        LEFT JOIN ser_dictionary t2 ON t1.xb = t2.code AND t2.type='sex'
+        LEFT JOIN ser_dictionary t3 ON t1.mz = t3.code AND t3.type='folk'
+        LEFT JOIN ser_dictionary t4 ON t1.xdfs = t4.code AND t4.type='xdfs'
+        LEFT JOIN ser_dictionary t6 ON t1.jkzk = t6.code AND t6.type='jkzk'
+        LEFT JOIN ser_dictionary t7 ON t1.jglx = t7.code AND t7.type='jglxdm'
+        LEFT JOIN ser_dictionary t8 ON t1.fqqk = t8.code AND t8.type='fqqk'
+        LEFT JOIN ser_dictionary t9 ON t1.gldj = t9.code AND t9.type='gldj'
+        LEFT JOIN ser_dictionary t10 ON t1.zjzl = t10.code AND t10.type='zjzl'
+        )t
+    </select>
+
+    <!--获取戒毒人员信息用于戒毒人员考试展示(接口暴露查部分信息)-->
+    <select id="selectByExamJdrybm" resultType="com.bp.sys.po.BaseAddictsDto">
+        select xm,jdrybm,xb,szdd,zp,t2.name as mz_name,t3.name as xb_name from base_addicts t1
+        LEFT JOIN ser_dictionary t2 ON t1.mz = t2.code AND t2.type='folk'
+        LEFT JOIN ser_dictionary t3 ON t1.xb = t3.code AND t3.type='sex'
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 教育矫正-分页查询对应分期阶段的人员基本信息 -->
+    <select id="selectBaseInfoWhenJoinBc" parameterType="map" resultType="java.util.HashMap">
+        select ba.uuid, ba.jdrybm, ba.xm,ba.csrq,ba.jdqk,bd.bmmc,ba.rsrq, ba.qzgljdjsrq, sd.`name`, sd_s.name as xb,
+        ba.szdd,
+        (select TIMESTAMPDIFF(YEAR, ba.csrq, CURDATE())) as nl, ifnull(ba.sfwzdry,0) as sfwzdry,
+        (select sd_x.name from ser_dictionary sd_x where sd_x.code = ba.whcd AND sd_x.type = 'whcd') as xl
+        from base_addicts ba
+        left join ser_dictionary sd on ba.fqqk = sd.code
+        left join ser_dictionary sd_s on ba.xb = sd_s.code
+        inner join base_department bd on ba.bmbm = bd.bmbm
+        and sd.type = 'fqqk' and sd_s.type = 'sex'
+        and ba.fqqk = #{fqqk}
+        and ba.jdrybm not in
+        (select ej_.jdrybm from edu_jxbcry ej_ where ej_.bcbm in (
+        select ej.bcbm from edu_jxbc ej where 1=1
+        <if test="fqqk == 02 ">
+            and ej.km = 'rsjy'
+        </if>
+        <if test="fqqk == 03 ">
+            and ej.km = 'kthjx'
+        </if>
+        <if test="fqqk == 04 ">
+            and ej.km = 'hgshjy'
+        </if>
+        ))
+        <!-- 模糊查询戒毒人员姓名 -->
+        <if test="xm != null and xm != '' ">
+            and ba.xm like concat('%', #{xm}, '%')
+        </if>
+        <if test="bmbm != null and bmbm != '' ">
+            and (ba.bmbm = #{bmbm} or ba.bmbm in (select bd_.bmbm from base_department bd_ where bd_.sjbmbm = #{bmbm}))
+        </if>
+        order by
+         <if test="field == null or field =='' or order ==null or order ==''">
+            <if test="fqqk == 02 ">
+                ba.rsrq asc
+            </if>
+            <if test="fqqk == 03 or fqqk == 04">
+                ba.qzgljdjsrq asc
+            </if>
+        </if>
+         <if test="field !=null and field !='' and order != null and order !=''">
+            ${field} ${order}
+        </if>
+    </select>
+
+    <!--根据戒毒人员取取最大再返回最新戒毒人员编码-->
+    <select id="getMaxJdrybm" resultType="java.lang.String" parameterType="java.lang.String">
+        select jdrybm from base_addicts where 1=1
+        <if test="jdjgbm != null and jdjgbm != ''">
+            and jdjgbm = ${jdjgbm}
+        </if>
+        order by jdrybm desc limit 1
+    </select>
+    <update id="updateJdtyBmbm">
+        update base_addicts set bmbm=#{bmbm},szdd=#{szdd} where jdrybm=#{jdrybm}
+    </update>
+    <update id="updateBaseAddictsByJdrybm">
+        update base_addicts
+        <set>
+            <if test="uuid != null">uuid = #{uuid,jdbcType=VARCHAR},</if>
+            <if test="type != null">type = #{type,jdbcType=VARCHAR},</if>
+            <if test="jdrybm != null">jdrybm = #{jdrybm,jdbcType=VARCHAR},</if>
+            <if test="jdjgbm != null">jdjgbm = #{jdjgbm,jdbcType=VARCHAR},</if>
+            <if test="bmbm != null">bmbm = #{bmbm,jdbcType=VARCHAR},</if>
+            <if test="zp != null">zp = #{zp,jdbcType=VARCHAR},</if>
+            <if test="xm != null">xm = #{xm,jdbcType=VARCHAR},</if>
+            <if test="cym != null">cym = #{cym,jdbcType=VARCHAR},</if>
+            <if test="xb != null">xb = #{xb,jdbcType=VARCHAR},</if>
+            <if test="csrq != null">csrq = #{csrq,jdbcType=DATE},</if>
+            <if test="mz != null">mz = #{mz,jdbcType=VARCHAR},</if>
+            <if test="jglx != null">jglx = #{jglx,jdbcType=VARCHAR},</if>
+            <if test="jkzk != null">jkzk = #{jkzk,jdbcType=VARCHAR},</if>
+            <if test="xx != null">xx = #{xx,jdbcType=VARCHAR},</if>
+            <if test="sg != null">sg = #{sg,jdbcType=INTEGER},</if>
+            <if test="zjzl != null">zjzl = #{zjzl,jdbcType=VARCHAR},</if>
+            <if test="zjhm != null">zjhm = #{zjhm,jdbcType=VARCHAR},</if>
+            <if test="hyzk != null">hyzk = #{hyzk,jdbcType=VARCHAR},</if>
+            <if test="zjxy != null">zjxy = #{zjxy,jdbcType=VARCHAR},</if>
+            <if test="whcd != null">whcd = #{whcd,jdbcType=VARCHAR},</if>
+            <if test="zzmm != null">zzmm = #{zzmm,jdbcType=VARCHAR},</if>
+            <if test="hjszd != null">hjszd = #{hjszd,jdbcType=VARCHAR},</if>
+            <if test="xjzdxxdz != null">xjzdxxdz = #{xjzdxxdz,jdbcType=VARCHAR},</if>
+            <if test="ydwxxdz != null">ydwxxdz = #{ydwxxdz,jdbcType=VARCHAR},</if>
+            <if test="ydwxxlxdh != null">ydwxxlxdh = #{ydwxxlxdh,jdbcType=VARCHAR},</if>
+            <if test="zylxrxm != null">zylxrxm = #{zylxrxm,jdbcType=VARCHAR},</if>
+            <if test="zylxrlxdh != null">zylxrlxdh = #{zylxrlxdh,jdbcType=VARCHAR},</if>
+            <if test="zylxrgx != null">zylxrgx = #{zylxrgx,jdbcType=VARCHAR},</if>
+            <if test="zylxrlxdz != null">zylxrlxdz = #{zylxrlxdz,jdbcType=VARCHAR},</if>
+            <if test="qzgljdksrq != null">qzgljdksrq = #{qzgljdksrq,jdbcType=DATE},</if>
+            <if test="qzgljdjsrq != null">qzgljdjsrq = #{qzgljdjsrq,jdbcType=DATE},</if>
+            <if test="jdjgmc != null">jdjgmc = #{jdjgmc,jdbcType=VARCHAR},</if>
+            <if test="sjdwmc != null">sjdwmc = #{sjdwmc,jdbcType=VARCHAR},</if>
+            <if test="zacfcs != null">zacfcs = #{zacfcs,jdbcType=INTEGER},</if>
+            <if test="qjcs != null">qjcs = #{qjcs,jdbcType=INTEGER},</if>
+            <if test="qkcs != null">qkcs = #{qkcs,jdbcType=INTEGER},</if>
+            <if test="hcjs != null">hcjs = #{hcjs,jdbcType=VARCHAR},</if>
+            <if test="rsrq != null">rsrq = #{rsrq,jdbcType=DATE},</if>
+            <if test="xds != null">xds = #{xds,jdbcType=VARCHAR},</if>
+            <if test="rsqjyqk != null">rsqjyqk = #{rsqjyqk,jdbcType=VARCHAR},</if>
+            <if test="lydpzl != null">lydpzl = #{lydpzl,jdbcType=VARCHAR},</if>
+            <if test="xdfs != null">xdfs = #{xdfs,jdbcType=VARCHAR},</if>
+            <if test="xdnx != null">xdnx = #{xdnx,jdbcType=VARCHAR},</if>
+            <if test="sbybqk != null">sbybqk = #{sbybqk,jdbcType=VARCHAR},</if>
+            <if test="bcqk != null">bcqk = #{bcqk,jdbcType=VARCHAR},</if>
+            <if test="sfyxsfzjl != null">sfyxsfzjl = #{sfyxsfzjl,jdbcType=INTEGER},</if>
+            <if test="zywfss != null">zywfss = #{zywfss,jdbcType=VARCHAR},</if>
+            <if test="sjry != null">sjry = #{sjry,jdbcType=VARCHAR},</if>
+            <if test="swry != null">swry = #{swry,jdbcType=VARCHAR},</if>
+            <if test="szqk != null">szqk = #{szqk,jdbcType=VARCHAR},</if>
+            <if test="jdryzt != null">jdryzt = #{jdryzt,jdbcType=VARCHAR},</if>
+            <if test="fqqk != null">fqqk = #{fqqk,jdbcType=VARCHAR},</if>
+            <if test="gldj != null">gldj = #{gldj,jdbcType=VARCHAR},</if>
+            <if test="sfycjcjjl != null">sfycjcjjl = #{sfycjcjjl,jdbcType=INTEGER},</if>
+            <if test="sfylwjl != null">sfylwjl = #{sfylwjl,jdbcType=INTEGER},</if>
+            <if test="glfs != null">glfs = #{glfs,jdbcType=VARCHAR},</if>
+            <if test="zbjsrq != null">zbjsrq = #{zbjsrq,jdbcType=TIMESTAMP},</if>
+            <if test="zbjsyy != null">zbjsyy = #{zbjsyy,jdbcType=VARCHAR},</if>
+            <if test="byjsrq != null">byjsrq = #{byjsrq,jdbcType=TIMESTAMP},</if>
+            <if test="byjsyy != null">byjsyy = #{byjsyy,jdbcType=VARCHAR},</if>
+            <if test="qzjdwsh != null">qzjdwsh = #{qzjdwsh,jdbcType=VARCHAR},</if>
+            <if test="dah != null">dah = #{dah,jdbcType=VARCHAR},</if>
+            <if test="sfjsrs != null">sfjsrs = #{sfjsrs,jdbcType=VARCHAR},</if>
+            <if test="qtjb != null">qtjb = #{qtjb,jdbcType=VARCHAR},</if>
+            <if test="qtbl != null">qtbl = #{qtbl,jdbcType=VARCHAR},</if>
+            <if test="sbybhm != null">sbybhm = #{sbybhm,jdbcType=VARCHAR},</if>
+            <if test="dwxxdz != null">dwxxdz = #{dwxxdz,jdbcType=VARCHAR},</if>
+            <if test="dwxxlxdh != null">dwxxlxdh = #{dwxxlxdh,jdbcType=VARCHAR},</if>
+            <if test="qtzy != null">qtzy = #{qtzy,jdbcType=VARCHAR},</if>
+            <if test="grjl != null">grjl = #{grjl,jdbcType=VARCHAR},</if>
+            <if test="szdd != null">szdd = #{szdd,jdbcType=VARCHAR},</if>
+            <if test="jdqk != null">jdqk = #{jdqk,jdbcType=INTEGER},</if>
+            <if test="qtdpmc != null">qtdpmc = #{qtdpmc,jdbcType=VARCHAR},</if>
+            <if test="qjjds != null">qjjds = #{qjjds,jdbcType=VARCHAR},</if>
+            <if test="zdpgsc != null">zdpgsc = #{zdpgsc,jdbcType=VARCHAR},</if>
+            <if test="dtgkqkb != null">dtgkqkb = #{dtgkqkb,jdbcType=VARCHAR},</if>
+            <if test="xdcyrds != null">xdcyrds = #{xdcyrds,jdbcType=VARCHAR},</if>
+            <if test="jkzkjcb != null">jkzkjcb = #{jkzkjcb,jdbcType=VARCHAR},</if>
+            <if test="qtfj != null">qtfj = #{qtfj,jdbcType=VARCHAR},</if>
+            <if test="sfyjjgrwp != null">sfyjjgrwp = #{sfyjjgrwp,jdbcType=INTEGER},</if>
+            <if test="kfjb != null">kfjb = #{kfjb,jdbcType=VARCHAR},</if>
+            <if test="sfyqj != null">sfyqj = #{sfyqj,jdbcType=INTEGER},</if>
+            <if test="yqjts != null">yqjts = #{yqjts,jdbcType=INTEGER},</if>
+            <if test="ysdqjts != null">ysdqjts = #{ysdqjts,jdbcType=INTEGER},</if>
+            <if test="sfydj != null">sfydj = #{sfydj,jdbcType=INTEGER},</if>
+            <if test="inserter != null">inserter = #{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">updater = #{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="sfwzdry != null">sfwzdry = #{sfwzdry,jdbcType=VARCHAR},</if>
+            <if test="lwzdryyy != null">lwzdryyy = #{lwzdryyy,jdbcType=VARCHAR},</if>
+            <if test="zdlx != null">zdlx = #{zdlx,jdbcType=VARCHAR},</if>
+            <if test="rcxwkhf != null">rcxwkhf = #{rcxwkhf,jdbcType=DOUBLE},</if>
+            <if test="tz != null">tz = #{tz,jdbcType=VARCHAR},</if>
+            <if test="jg != null">jg = #{jg,jdbcType=VARCHAR},</if>
+            <if test="ljhgs != null">ljhgs = #{ljhgs,jdbcType=INTEGER},</if>
+            <if test="lxbhgs != null">lxbhgs = #{lxbhgs,jdbcType=INTEGER},</if>
+            <if test="zylxrbz != null">zylxrbz = #{zylxrbz,jdbcType=VARCHAR},</if>
+        </set>
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 根据部门编码查询戒毒人员数量 -->
+    <select id="selectJdryCountByBmbm" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select count(a.uuid)
+        from base_addicts a left join base_department b on a.bmbm = b.bmbm
+        where (jdrybm != '' and jdrybm is not null) and a.jdryzt in ('01','02','03','04')
+        and (a.bmbm = #{_parameter} or b.sjbmbm = #{_parameter})
+    </select>
+
+    <!-- 职业技术名单上报查询戒毒人员 -->
+    <select id="selectListWithSkill" resultType="java.util.Map" parameterType="java.util.Map">
+        select a.jdrybm, a.xm, a.szdd from base_addicts a left join base_department b on a.bmbm = b.bmbm
+        where (jdrybm != '' and jdrybm is not null) and a.jdryzt in ('01','02','03','04')
+        <if test="bmbm != null and bmbm != ''">
+            and (a.bmbm = #{bmbm} or b.sjbmbm = #{bmbm})
+        </if>
+        and a.jdqk = 0
+        and TIMESTAMPDIFF(YEAR,a.csrq,SYSDATE()) between 18 and 55
+        and TIMESTAMPDIFF(Day,SYSDATE(),a.qzgljdjsrq) &lt; 365
+        and a.jdrybm not in (select ez.jdrybm from edu_zyjsmd ez)
+        and a.jdryzt in ('01','02','03','04')
+    </select>
+
+    <!-- 根据姓名和身份证号查询戒毒人员编码 -->
+    <select id="selectByXmAndSfzh" resultType="java.util.Map" parameterType="java.util.Map">
+        select jdrybm, bmbm, jdjgbm from base_addicts where xm = #{xm} and zjhm = #{sfzh} limit 0,1
+    </select>
+    <select id="findByBmbm" resultType="com.bp.sys.po.BaseAddicts">
+
+        SELECT * FROM base_addicts WHERE bmbm=#{bmbm} and jdryzt in('01','02','03','04')
+    </select>
+
+    <!-- 验收检查-分页查询重点人员信息 -->
+    <select id="selectZdryList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        ba.jdrybm,
+        ba.xm,
+        ba.szdd,
+        sd.NAME AS lwzdryyy,
+        IFNULL( zd.lwzdryrq, '无' ) lwzdryrq,
+        IFNULL(TIMESTAMPDIFF(YEAR, ba.csrq, CURDATE()), '无' ) nl
+        FROM
+        base_addicts ba
+        LEFT JOIN ser_dictionary sd ON ba.lwzdryyy = sd.CODE
+        AND sd.type = 'lwzdryyy'
+        LEFT JOIN gov_zdryxx zd ON zd.jdrybm = ba.jdrybm
+        WHERE
+        ba.sfwzdry = 1
+        AND ba.jdryzt IN ( '01', '02', '03', '04' )
+        <if test="key !=null and key !='' ">
+            and ba.xm like concat('%', #{key}, '%') or ba.jdrybm = #{key}
+        </if>
+        <if test="bmbm !=null and bmbm !='' ">
+            and ba.bmbm like concat('%', #{bmbm}, '%')
+        </if>
+        <if test="bmmc !=null and bmmc !='' ">
+            and ba.szdd like concat('%', #{bmmc}, '%')
+        </if>
+        <if test="code !=null and code !='' ">
+            and zd.zdbhlx like concat('%',#{code}, '%')
+        </if>
+        order by ba.insert_time ASC
+
+    </select>
+    <!-- 验收检查-查询重点人员信息数量 -->
+    <select id="selectZdryListCount" resultType="java.lang.Long" parameterType="java.util.Map">
+        select count(*) from (
+        select ba.jdrybm, ba.xm, ba.szdd, sd.name as lwzdryyy
+        from base_addicts ba left join ser_dictionary sd on ba.lwzdryyy = sd.code and sd.type = 'lwzdryyy'
+        where ba.sfwzdry = 1 and ba.jdryzt in('01','02','03','04')
+        <if test="bmmc !=null and bmmc !='' ">
+            and ba.szdd like concat('%', #{bmmc}, '%')
+        </if>
+        order by ba.insert_time ASC) t
+    </select>
+    <!-- 大数据页面查询各大队重点戒毒人员下的,重症人员、自残人员、脱逃人员数量统计 -->
+    <select id="bigDataStatisticsZdjdry" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        count(dd.sjbmbm) count,
+        case sd.code when '01' then '脱逃人员' when '02' then '自残人员' else '重症人员' END `type`
+        FROM
+        base_addicts ba
+        LEFT JOIN ser_dictionary sd ON ba.lwzdryyy = sd.CODE
+        AND sd.type = 'lwzdryyy'
+        LEFT JOIN base_department dd on dd.bmbm = ba.bmbm
+        INNER JOIN base_department dd_ on dd_.bmbm=dd.sjbmbm
+        WHERE
+        ba.sfwzdry = 1 and (ba.lwzdryyy is not null or ba.lwzdryyy != '')
+        AND ba.jdryzt IN ( '01', '02', '03', '04' )
+        <if test="bmbm != null and bmbm != ''">
+            and (dd_.bmbm = #{bmbm})
+        </if>
+        GROUP BY dd.sjbmbm,CASE WHEN ba.lwzdryyy IN (03,04,05,06,07,08,09,10) THEN 01 ELSE 02 END
+    </select>
+
+    <select id="selectJdry" resultType="com.bp.sys.po.BaseAddicts">
+        select * from base_addicts where jdrybm in ('3601012017000993',
+        '3601012018000014',
+        '3601012018000075',
+        '3601012018000097',
+        '3601012018000122',
+        '3601012018000132',
+        '3601012018000143',
+        '3601012018000147',
+        '3601012018000158',
+        '3601012018000172',
+        '3601012018000224',
+        '3601012018000638',
+        '3601012018000819')
+    </select>
+    <!-- 大数据页面查询10类重点戒毒人员数量统计 -->
+    <select id="bigDataStatistics10Zdjdry" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        t.`code`,
+        IFNULL( t_.count, 0 ) count
+        FROM
+        ( SELECT `code`, `name` FROM ser_dictionary sd WHERE sd.type = 'lwzdryyy' ) t
+        LEFT JOIN (
+        SELECT
+        lwzdryyy,
+        COUNT( lwzdryyy ) count
+        FROM
+        gov_zdryxx
+        WHERE
+        type = 1
+        GROUP BY
+        lwzdryyy)t_ ON t.`code` = t_.lwzdryyy
+
+    </select>
+
+    <!-- 戒毒人员统计情况 -->
+    <select id="bigDataJdryCountStatistics" parameterType="java.util.Map" resultType="java.lang.Long">
+        select count(1) count from base_addicts ba where 1=1
+        <!-- 在所 -->
+        <if test="typeName == 'zs'">
+            and ba.jdryzt = '01'
+        </if>
+        <!-- 本月新收 -->
+        <if test="typeName == 'byxs'">
+            and ba.jdryzt in('01','02','03','04')
+            and DATE_FORMAT(ba.rsrq,'%Y-%m') = DATE_FORMAT(now(),'%Y-%m')
+        </if>
+        <!-- 解除强戒 -->
+        <if test="typeName == 'jcqj'">
+            and ba.jdryzt in('01','02','03','04')
+            and ba.jdryzt = '11'
+        </if>
+        <!-- 在册 -->
+        <if test="typeName == 'zc'">
+            and ba.jdryzt in('01','04')
+        </if>
+
+        <!-- 重点人员 -->
+        <if test="typeName == 'zdry'">
+            and ba.sfwzdry = '1'
+        </if>
+
+    </select>
+
+
+    <!-- 大数据页面查询戒毒人员,部分信息 -->
+    <select id="selectJdryList" resultType="java.util.Map">
+        SELECT YEAR( FROM_DAYS( DATEDIFF( NOW( ), t1.csrq))) AS age,
+        (SELECT NAME FROM ser_dictionary sd WHERE sd.type = 'jkzk' AND sd.`code`=t1.jkzk ) AS jkzk,
+        (SELECT NAME FROM ser_dictionary sd WHERE sd.`type`='jglxdm' AND sd.code = t1.jglx) AS jglx,
+        CASE t1.sfyxsfzjl WHEN 0 THEN '无' WHEN 1 THEN '有' ELSE '无' END AS wffzjl ,
+        CASE t1.sfylwjl WHEN 0 THEN '无' WHEN 1 THEN '有' ELSE '无' END AS lwjy,
+        CASE t1.sfycjcjjl WHEN 0 THEN '无' WHEN 1 THEN '有' ELSE '无' END AS cjcjjl
+        FROM base_addicts t1 where t1.jdrybm = #{jdrybm}
+
+    </select>
+
+    <!--工作提醒:查找教育适应区30天没有做H1的戒毒人员-->
+    <select id="workRemindH1" resultType="java.util.Map">
+        SELECT t1.*, t2.state FROM (
+            SELECT
+                a.*,
+                b.transfer_date,
+                datediff( now( ), b.transfer_date ) AS days
+            FROM
+                ( SELECT jdrybm, xm FROM base_addicts WHERE fqqk = '02' AND jdryzt = '01' ) a
+                LEFT JOIN ( SELECT * FROM base_transfer_area_record WHERE now_area = '01' ) b ON a.jdrybm = b.jdrybm
+            WHERE datediff( now( ), b.transfer_date ) > 30
+            ) t1
+            LEFT JOIN ( SELECT DISTINCT ( jdrybm ) AS jdrybm, spzt as state FROM rt_jdryxlkhpg  WHERE spzt = 1 ) t2 ON t1.jdrybm = t2.jdrybm
+        WHERE
+            t2.jdrybm IS NULL;
+    </select>
+
+    <!--工作提醒:查找教育适应区30天没有做E1的戒毒人员-->
+    <select id="workRemindE1" resultType="java.util.Map">
+        SELECT t1.*, t2.state FROM (
+            SELECT
+                a.*,
+                b.transfer_date,
+                datediff( now( ), b.transfer_date ) AS days
+            FROM
+                ( SELECT jdrybm, xm FROM base_addicts WHERE fqqk = '02' AND jdryzt = '01' ) a
+                LEFT JOIN ( SELECT * FROM base_transfer_area_record WHERE now_area = '01' ) b ON a.jdrybm = b.jdrybm
+            WHERE
+                datediff( now( ), b.transfer_date ) > 30
+            ) t1
+            LEFT JOIN ( SELECT DISTINCT ( jdrybm ) AS jdrybm, state FROM edu_zdpg_jysyq WHERE state = 1 ) t2 ON t1.jdrybm = t2.jdrybm
+        WHERE
+            state IS NULL
+    </select>
+    <!--    根据姓名查询戒毒人员集合-->
+    <select id="selectBaseAddictsByName" resultType="com.bp.sys.po.BaseAddicts">
+        select * from base_addicts where xm=#{xm} and type='01' and jdryzt in('01','02','03','04')
+    </select>
+
+</mapper>
+

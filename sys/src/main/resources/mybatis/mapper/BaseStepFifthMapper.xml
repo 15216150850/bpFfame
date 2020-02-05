@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseStepFifthMapper">
+
+
+    <!-- 带参数查询期满前综合诊断评估信息表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,bh,jdrybm,jdjgbm,bmbm,jdcs,sffdbdtqjc,sltdqjdxzdpgjg,jysyqjdxzdpgjg,kfggqjdxzdpgjg,ynhzhzdpgjg,qmqzhzdpgjg,qmqzhzdpgyj,pgfzr,pgsj,bz,inserter,insert_time,updater,update_time,act_title,pid,remark,doc_state,flow_sn,flow_state
+        from base_step_fifth where 1=1
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+</mapper>
+

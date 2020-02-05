@@ -1,0 +1,65 @@
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    password:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/smart_prison_sys?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    username: root
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-test-query: SELECT 1
+  rabbitmq:
+    host: 192.168.11.111
+    port: 5672
+    username: admin
+    password: 123456
+    virtual-host: root
+  mvc:
+    servlet:
+      load-on-startup: 1
+  application:
+    name: oauth
+access_token:
+  store-jwt: true
+  jwt-signing-key: xiao@wei@jia@gou=$==+_+%0%:)(:)
+  add-userinfo: false
+logging:
+  level:
+    root: info
+    com.cloud: debug
+  file: c:/log/oauth.log
+ribbon:
+  eager-load:
+    enabled: true
+    clients: user-center
+  ReadTimeout: 10000
+  ConnectTimeout: 10000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 0
+  OkToRetryOnAllOperations: false
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 15000
+server:
+  port: 9015
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8010/eureka/
+  instance:
+    lease-expiration-duration-in-seconds: 15
+    lease-renewal-interval-in-seconds: 5
+    prefer-ip-address: true
+    instance-id: oauth
+    #    ${spring.application.name}:${random.value}
+mybatis-plus:
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  config-location: classpath:mybatis/mybatis-config.xml

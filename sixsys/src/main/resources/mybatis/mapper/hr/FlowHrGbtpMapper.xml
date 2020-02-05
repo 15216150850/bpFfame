@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.hr.FlowHrGbtpMapper">
+
+
+    <!-- 带参数查询干部调配列表 -->
+    <select id="selectList" resultType="java.util.Map">
+			SELECT
+			t1.uuid,t1.cgd,t2.xm AS jcxm ,t4.name as flowStateName,t3.bmmc AS bmmc,t1.xm,t1.drdwjzw,t1.xzzw,t1.sfzdzys,t1.ybm,t1.sqsy,t1.yjsm,t1.fj,t1.sqr,t1.sqrbm,t1.inserter,
+			t1.insert_time,t1.drhzw,t1.updater,t1.update_time,t1.act_title,t1.pid,t1.remark,t1.doc_state,t1.flow_sn,
+			t1.flow_state,t1.is_allno,t1.hccl,t1.zzchysj,t1.zzchynr,
+			(SELECT sd.name FROM ser_dictionary sd WHERE sd.type = 'xzzw' AND sd.code = t1.drhzw) AS drhxzzw,
+			(SELECT sd.name FROM ser_dictionary sd WHERE sd.type = 'gbtpsqsy' AND sd.code = t1.sqsy) AS sqsyname,
+			(SELECT sd.name FROM ser_dictionary sd WHERE sd.type = 'xzzw' AND sd.code = t1.xzzw) AS xzzwname
+		     FROM flow_hr_gbtp t1
+		     LEFT JOIN base_police t2 ON t1.xm =t2.jcbm
+		     LEFT JOIN base_department t3 ON t1.drdwjzw = t3.bmbm
+		     left join t_dictionary t4 on t1.flow_state = t4.code and t4.type = 'flowState'
+		WHERE 1=1
+		<if test="flowState != null and flowState!=''">
+			AND( t1.flow_state=#{flowState}
+			<if test="flowState==2">
+				or t1.flow_state=6 or t1.flow_state=7
+			</if>
+			<if test="flowState==5">
+				or t1.flow_state=1
+			</if>
+			<if test="flowState==3">
+				or t1.flow_state=4
+			</if>
+			)
+			<if test="keyWord !=null and keyWord!=''">
+				and (t1.xm like concat('%',#{keyWord},'%') or t2.xm  like concat('%',#{keyWord},'%'))
+			</if>
+			<if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+				and t1.inserter = #{currentUserId}
+			</if>
+			<if test="field == null or field =='' or order ==null or order ==''">
+				order by t1.insert_time desc
+			</if>
+
+			<if test="field !=null and field !='' and order != null and order !=''">
+				order by ${field} ${order}
+			</if>
+		</if>
+	</select>
+
+	<select id="selectById" resultType="com.bp.sixsys.po.hr.FlowHrGbtp">
+		SELECT t1.*,t2.bmmc AS drhbmmc FROM flow_hr_gbtp t1
+		LEFT JOIN base_department t2 ON t1.drdwjzw =  t2.bmbm
+		where t1.uuid = #{uuid}
+	</select>
+
+	<select id="findByPid" resultType="com.bp.sixsys.po.hr.FlowHrGbtp">
+		SELECT t1.*,t2.bmmc AS drhbmmc FROM flow_hr_gbtp t1
+		LEFT JOIN base_department t2 ON t1.drdwjzw =  t2.bmbm
+		where t1.pid = #{pid}
+	</select>
+</mapper>
+

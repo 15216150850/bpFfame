@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.DiagBehaveGradeItemMapper">
+
+    <!-- 根据pid查询日常计分条款 -->
+    <select id="selectChildList" resultType="com.bp.sys.po.DiagBehaveGradeItem">
+        select
+        uuid,parent_id,code,content,type,upper_grade,lower_grade,is_deduce,is_valid,jflx,jfxm,jftk,inserter,insert_time,updater,update_time
+        from diag_behave_grade_item
+        where parent_id = #{uuid,jdbcType=VARCHAR} order by code ASC
+    </select>
+
+    <!-- 带参数查询日常计分条款列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        <!-- select
+            s1.*,s2.name as typeName
+        from (select uuid id,parent_id pId,code,content name,type,upper_grade,lower_grade,is_deduce,is_valid,jflx,jfxm,jftk,behave_hasChild(uuid) hasChild,insert_time from diag_behave_grade_item where parent_id=#{pid})s1 left join
+            (select code,name from t_dictionary where type='behave')s2 on s1.type = s2.code
+        where 1=1
+        order by s1.code asc-->
+        select a.*,b.name jflxName,c.name jfxmName from diag_behave_grade_item a
+        left join ser_dictionary b on a.jflx=b.code and b.type='jflx'
+        left join ser_dictionary c on a.jfxm=c.code and c.type='jfxm'
+        where a.type=#{type}
+        <if test="jflx!=null and jflx!=''">
+            and a.jflx=#{jflx}
+        </if>
+        <if test="jfxm!=null and jfxm!=''">
+            and a.jfxm=#{jfxm}
+        </if>
+        <if test="keyWord!=null and keyWord!=''">
+            and b.name like concat('%',#{keyWord},'%')
+        </if>
+        order by jflx ASC
+    </select>
+
+    <!-- 检查code是否重复 -->
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(uuid) from diag_behave_grade_item where code = #{code}
+        <if test="uuid!=null and uuid!=''">
+            and uuid != #{uuid}
+        </if>
+    </select>
+
+    <select id="getMaxCodeByParentId" resultType="com.bp.sys.po.DiagBehaveGradeItem">
+        select * from diag_behave_grade_item where parent_id = #{uuid,jdbcType=VARCHAR} order by code DESC limit 1
+    </select>
+    <!--根据记分类型、项目、条款查询最后一个记分明细code-->
+    <select id="getMaxCode" resultType="com.bp.sys.po.DiagBehaveGradeItem">
+        select * from diag_behave_grade_item where jflx = #{jflx,jdbcType=VARCHAR} and jfxm = #{jfxm,jdbcType=VARCHAR}
+        and jftk = #{jftk,jdbcType=VARCHAR}
+        <!--修改时排除自己取最大编码-->
+        <if test="uuid!=null and uuid!=''">
+            and uuid!=#{uuid}
+        </if>
+        order by SUBSTRING(code,7) DESC limit 1
+    </select>
+
+    <!--根据记分类型、项目、条款查询最后一个记分明细code 最新改版后-->
+    <select id="getLastCode" resultType="com.bp.sys.po.DiagBehaveGradeItem">
+        select * from diag_behave_grade_item where code like concat(#{code,jdbcType=VARCHAR},'%')
+        <!--修改时排除自己取最大编码-->
+        <if test="uuid!=null and uuid!=''">
+            and uuid!=#{uuid}
+        </if>
+        order by SUBSTRING(code,7) DESC limit 1
+    </select>
+    <!--获取树-->
+    <select id="selectAllTree" resultType="java.util.Map">
+        select uuid as id,parent_id as pId,content as name,code from diag_behave_grade_item order by code ASC
+    </select>
+
+    <!--查询记分条款-->
+    <select id="selectJftk" resultType="java.util.Map">
+        SELECT DISTINCT jftk FROM diag_behave_grade_item WHERE jflx=#{jflx} AND jfxm=#{jfxm} order by jftk ASC
+    </select>
+
+    <!--查询记分明细-->
+    <select id="selectJfmx" resultType="java.util.Map">
+        SELECT * FROM diag_behave_grade_item WHERE jflx=#{jflx} AND jfxm=#{jfxm}
+        <if test="jftk!=null and jftk!=''">
+            AND jftk=#{jftk}
+        </if>
+        order by code ASC
+    </select>
+
+    <!--查询该类型条款最后一条记分明细-->
+    <select id="selectLastJfmx" resultType="java.util.Map">
+        SELECT * FROM diag_behave_grade_item WHERE jflx=#{jflx} AND jfxm=#{jfxm}
+        order by code DESC limit 0,1
+    </select>
+
+    <!--    根据条件查询计分项-->
+    <select id="selectByCondition" resultType="com.bp.sys.po.DiagBehaveGradeItem">
+        SELECT * FROM diag_behave_grade_item WHERE code=#{code}
+    </select>
+
+</mapper>
+

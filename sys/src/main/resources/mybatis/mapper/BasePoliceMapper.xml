@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BasePoliceMapper">
+
+    <insert id="insertBetch" parameterType="java.util.List">
+        insert into base_police(uuid,xm,jcbm,bmbm,jdjgbm,xb,zzmm,zj,jx,ryzt)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.uuid},#{item.xm},#{item.jcbm},#{item.bmbm},#{item.jdjgbm},#{item.xb},#{item.zzmm},#{item.zj},#{item.jx},#{item.ryzt})
+        </foreach>
+    </insert>
+    <update id="updateBmbm">
+        UPDATE base_police a left join base_department b on a.bmbm=b.bmmc SET a.bmbm=b.bmbm
+        where is_modify=0
+    </update>
+    <update id="updateXb">
+        UPDATE base_police a left join ser_dictionary b on concat(a.xb,'性') like b.name and b.type = 'sex' SET
+        a.xb=b.code
+        where is_modify=0
+    </update>
+    <update id="updateJdjg">
+        UPDATE base_police a left join base_org b on a.jdjgbm=b.jdjgmc SET a.jdjgbm=b.jdjgbm
+        where is_modify=0
+    </update>
+    <update id="updateZzmm">
+        UPDATE base_police a left join ser_dictionary b on a.zzmm=b.name and b.type ='zzmm' set a.zzmm=b.code
+        where is_modify=0
+    </update>
+    <update id="updateZj">
+        UPDATE base_police a left join ser_dictionary b on a.zj=b.name and b.type ='zjq' set a.zj=b.code
+        where is_modify=0
+    </update>
+    <update id="updateJx">
+
+        UPDATE base_police a left join ser_dictionary b on a.jx=b.name and b.type ='jx' set a.jx=b.code
+        where is_modify=0
+    </update>
+    <update id="updateIsModefy">
+        update base_police set is_modify=1
+    </update>
+    <update id="updateRyzt">
+        UPDATE base_police a left join ser_dictionary b on a.ryzt=b.name and b.type ='ryzt' set a.ryzt=b.code
+        where is_modify=0
+
+    </update>
+    <update id="updatemcByCode">
+        UPDATE base_police a left join base_department b on a.bmbm=b.bmmc SET a.bmbm=b.bmbm
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on concat(a.xb,'性') like b.name and b.type = 'sex' SET
+        a.xb=b.code
+        where is_modify=0;
+        UPDATE base_police a left join base_org b on a.jdjgbm=b.jdjgmc SET a.jdjgbm=b.jdjgbm
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.zzmm=b.name and b.type ='zzmm' set a.zzmm=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.zj=b.name and b.type ='zjq' set a.zj=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.jx=b.name and b.type ='jx' set a.jx=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.mz=b.name and b.type ='folk' set a.mz=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.ryzt=b.name and b.type ='jcryzt' set a.ryzt=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.xzzw=b.name and b.type ='xzzw' set a.xzzw=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.jxbglx=b.name and b.type ='jxbdlx' set a.jxbglx=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.jclx=b.name and b.type ='jclx1' set a.jclx=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.xl=b.name and b.type ='education' set a.xl=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.qrzxl=b.name and b.type ='education' set a.qrzxl=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.zgxw=b.name and b.type ='xw' set a.zgxw=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.qrzxw=b.name and b.type ='xw' set a.qrzxw=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.zzxw=b.name and b.type ='xw' set a.zzxw=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.zzxw=b.name and b.type ='xw' set a.zzxw=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.jkzk=b.name and b.type ='jkzk' set a.jkzk=b.code
+        where is_modify=0;
+        UPDATE base_police a left join ser_dictionary b on a.hyzk=b.name and b.type ='hyzk' set a.hyzk=b.code
+        where is_modify=0;
+        update base_police set is_modify=1;
+    </update>
+    <update id="updateByJcbm">
+        update base_police
+        <set>
+            <if test="uuid != null">uuid = #{uuid,jdbcType=VARCHAR},</if>
+            <if test="jcbm != null">jcbm = #{jcbm,jdbcType=VARCHAR},</if>
+            <if test="jdjgbm != null">jdjgbm = #{jdjgbm,jdbcType=VARCHAR},</if>
+            <if test="bmbm != null">bmbm = #{bmbm,jdbcType=VARCHAR},</if>
+            <if test="xm != null">xm = #{xm,jdbcType=VARCHAR},</if>
+            <if test="xb != null">xb = #{xb,jdbcType=VARCHAR},</if>
+            <if test="csrq != null">csrq = #{csrq,jdbcType=TIMESTAMP},</if>
+            <if test="jg != null">jg = #{jg,jdbcType=VARCHAR},</if>
+            <if test="csd != null">csd = #{csd,jdbcType=VARCHAR},</if>
+            <if test="mz != null">mz = #{mz,jdbcType=VARCHAR},</if>
+            <if test="jkzk != null">jkzk = #{jkzk,jdbcType=VARCHAR},</if>
+            <if test="hyzk != null">hyzk = #{hyzk,jdbcType=VARCHAR},</if>
+            <if test="cjgzsj != null">cjgzsj = #{cjgzsj,jdbcType=TIMESTAMP},</if>
+            <if test="gljsjzz != null">gljsjzz = #{gljsjzz,jdbcType=FLOAT},</if>
+            <if test="zzmm != null">zzmm = #{zzmm,jdbcType=VARCHAR},</if>
+            <if test="jrbdwrq != null">jrbdwrq = #{jrbdwrq,jdbcType=TIMESTAMP},</if>
+            <if test="rsgxszdwmc != null">rsgxszdwmc = #{rsgxszdwmc,jdbcType=VARCHAR},</if>
+            <if test="hjszd != null">hjszd = #{hjszd,jdbcType=VARCHAR},</if>
+            <if test="jmsfzhm != null">jmsfzhm = #{jmsfzhm,jdbcType=VARCHAR},</if>
+            <if test="ryzp != null">ryzp = #{ryzp,jdbcType=VARCHAR},</if>
+            <if test="ryzt != null">ryzt = #{ryzt,jdbcType=VARCHAR},</if>
+            <if test="zwlb != null">zwlb = #{zwlb,jdbcType=VARCHAR},</if>
+            <if test="xzzw != null">xzzw = #{xzzw,jdbcType=VARCHAR},</if>
+            <if test="dnzw != null">dnzw = #{dnzw,jdbcType=VARCHAR},</if>
+            <if test="zj != null">zj = #{zj,jdbcType=VARCHAR},</if>
+            <if test="jx != null">jx = #{jx,jdbcType=VARCHAR},</if>
+            <if test="jxbglx != null">jxbglx = #{jxbglx,jdbcType=VARCHAR},</if>
+            <if test="dh != null">dh = #{dh,jdbcType=VARCHAR},</if>
+            <if test="whcd != null">whcd = #{whcd,jdbcType=VARCHAR},</if>
+            <if test="zgxw != null">zgxw = #{zgxw,jdbcType=VARCHAR},</if>
+            <if test="zy != null">zy = #{zy,jdbcType=VARCHAR},</if>
+            <if test="jlfbqk != null">jlfbqk = #{jlfbqk,jdbcType=VARCHAR},</if>
+            <if test="yxjcfbqk != null">yxjcfbqk = #{yxjcfbqk,jdbcType=VARCHAR},</if>
+            <if test="ryly != null">ryly = #{ryly,jdbcType=VARCHAR},</if>
+            <if test="drlx != null">drlx = #{drlx,jdbcType=VARCHAR},</if>
+            <if test="ztbgrq != null">ztbgrq = #{ztbgrq,jdbcType=TIMESTAMP},</if>
+            <if test="jzqk != null">jzqk = #{jzqk,jdbcType=VARCHAR},</if>
+            <if test="kslx != null">kslx = #{kslx,jdbcType=VARCHAR},</if>
+            <if test="inserter != null">inserter = #{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">updater = #{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="nl != null">nl = #{nl,jdbcType=INTEGER},</if>
+            <if test="cjzzrq != null">cjzzrq = #{cjzzrq,jdbcType=TIMESTAMP},</if>
+            <if test="hkxz != null">hkxz = #{hkxz,jdbcType=VARCHAR},</if>
+            <if test="lxfs != null">lxfs = #{lxfs,jdbcType=VARCHAR},</if>
+            <if test="rxrq != null">rxrq = #{rxrq,jdbcType=TIMESTAMP},</if>
+            <if test="byrq != null">byrq = #{byrq,jdbcType=TIMESTAMP},</if>
+            <if test="xxmc != null">xxmc = #{xxmc,jdbcType=VARCHAR},</if>
+            <if test="xxszzq != null">xxszzq = #{xxszzq,jdbcType=VARCHAR},</if>
+            <if test="xz != null">xz = #{xz,jdbcType=VARCHAR},</if>
+            <if test="sxzylb != null">sxzylb = #{sxzylb,jdbcType=VARCHAR},</if>
+            <if test="xwsyrq != null">xwsyrq = #{xwsyrq,jdbcType=TIMESTAMP},</if>
+            <if test="xwsydw != null">xwsydw = #{xwsydw,jdbcType=VARCHAR},</if>
+            <if test="xwsydwszzq != null">xwsydwszzq = #{xwsydwszzq,jdbcType=VARCHAR},</if>
+            <if test="xxjl != null">xxjl = #{xxjl,jdbcType=VARCHAR},</if>
+            <if test="gwmc != null">gwmc = #{gwmc,jdbcType=VARCHAR},</if>
+            <if test="jclx != null">jclx = #{jclx,jdbcType=VARCHAR},</if>
+            <if test="LAY_CHECKED != null">jclx = #{jclx,jdbcType=VARCHAR},</if>
+            <if test="tx != null">tx = #{tx,jdbcType=VARCHAR},</if>
+            <if test="xl != null">xl = #{xl,jdbcType=VARCHAR},</if>
+            <if test="rybzlx != null">rybzlx = #{rybzlx,jdbcType=VARCHAR},</if>
+            <if test="rtzjrq != null">rtzjrq = #{rtzjrq,jdbcType=TIMESTAMP},</if>
+            <if test="rxzrq != null">rxzrq = #{rxzrq,jdbcType=TIMESTAMP},</if>
+            <if test="rdrq != null">rdrq = #{rdrq,jdbcType=TIMESTAMP},</if>
+            <if test="qrzxl != null">qrzxl = #{qrzxl,jdbcType=VARCHAR},</if>
+            <if test="qrzxw != null">qrzxw = #{qrzxw,jdbcType=VARCHAR},</if>
+            <if test="zzxl != null">zzxl = #{zzxl,jdbcType=VARCHAR},</if>
+            <if test="zzxw != null">zzxw = #{zzxw,jdbcType=VARCHAR},</if>
+            <if test="zzbyxx != null">zzbyxx = #{zzbyxx,jdbcType=VARCHAR},</if>
+            <if test="zzsxzy != null">zzsxzy = #{zzsxzy,jdbcType=VARCHAR},</if>
+            <if test="zyjszc != null">zyjszc = #{zyjszc,jdbcType=VARCHAR},</if>
+            <if test="xxqsrq != null">xxqsrq = #{xxqsrq,jdbcType=TIMESTAMP},</if>
+            <if test="sfjrjwtxl != null">sfjrjwtxl = #{sfjrjwtxl,jdbcType=VARCHAR},</if>
+            <if test="xx != null">xx = #{xx,jdbcType=VARCHAR},</if>
+            <if test="sortNo != null">sort_no = #{xx,jdbcType=INTEGER},</if>
+            <if test="status != null">status = #{status,jdbcType=INTEGER},</if>
+            <if test="xl2 != null">xl2 = #{xl2,jdbcType=INTEGER},</if>
+        </set>
+        where jcbm = #{jcbm,jdbcType=VARCHAR}
+
+    </update>
+    <update id="updateSortGt">
+        UPDATE base_police set sort_no = sort_no+1 where sort_no <![CDATA[ >= ]]>#{modifyNo} and sort_no <![CDATA[ < ]]>
+        #{rowNo}
+    </update>
+
+    <update id="updateSortLt">
+        UPDATE base_police set sort_no = sort_no-1 where sort_no <![CDATA[ > ]]>#{rowNo} and sort_no <![CDATA[ <= ]]>
+        #{modifyNo}
+    </update>
+
+    <update id="updateInsertSortNo">
+        UPDATE base_police SET sort_no = sort_no+1 WHERE sort_no <![CDATA[ > ]]> #{maxNo}
+    </update>
+
+    <!-- 根据姓名查询警察基本信息表 -->
+    <select id="selectByXm" resultType="java.util.Map">
+        select
+        *
+        from base_police
+        where xm = #{xm,jdbcType=VARCHAR}
+    </select>
+
+
+    <!-- 带参数查询警察基本信息表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        SELECT
+        a.*,b.bmmc, c.jdjgmc
+        FROM
+        base_police a
+        left join base_department b on a.bmbm = b.bmbm
+        left join base_org c on a.jdjgbm = c.jdjgbm
+        WHERE 1=1 and a.status='1'
+        <if test="keyWord != '' and keyWord != null">
+            and (a.jcbm like concat('%',#{keyWord},'%') or a.xm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="xm!=null and xm != ''">
+            and a.xm like concat('%',#{xm,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="jcbm!=null and jcbm != ''">
+            and a.jcbm like concat('%',#{jcbm,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="xb!=null and xb != ''">
+            and a.xb=#{xb}
+        </if>
+        <if test="jx!=null and jx != ''">
+            and a.jx=#{jx}
+        </if>
+        <if test="xzzw!=null and xzzw != ''">
+            and a.xzzw=#{xzzw}
+        </if>
+        <if test="ryzt!=null and ryzt != ''">
+            and a.ryzt=#{ryzt}
+        </if>
+        <if test="startAge!=null and startAge != ''">
+            and a.nl <![CDATA[ >= ]]>#{startAge}
+        </if>
+        <if test="endAge!=null and endAge != ''">
+            and a.nl <![CDATA[ <= ]]>#{endAge}
+        </if>
+        <if test="startTime!=null and startTime != ''">
+            and a.jrbdwrq <![CDATA[ >= ]]>#{startTime}
+        </if>
+        <if test="endTime!=null and endTime != ''">
+            and a.jrbdwrq <![CDATA[ <= ]]>#{endTime}
+        </if>
+        <if test="startXl!=null and startXl != ''">
+            and a.xl <![CDATA[ >= ]]>#{startXl}
+        </if>
+        <if test="endXl!=null and endXl != ''">
+            and a.xl <![CDATA[ <= ]]>#{endXl}
+        </if>
+        <if test="startXw!=null and startXw != ''">
+            and a.zgxw <![CDATA[ <= ]]>#{startXw}
+        </if>
+        <if test="endXw!=null and endXw != ''">
+            and a.zgxw <![CDATA[ <= ]]>#{endXw}
+        </if>
+        <if test="deptCode!=null and deptCode!=''">
+            and b.dept_code like concat('',#{deptCode,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="lxfs!=null and lxfs!=''">
+            and a.lxfs  = #{lxfs,jdbcType=VARCHAR}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and (a.bmbm = #{bmbm} or a.bmbm in (select bd_.sjbmbm from base_department bd_ where bd_.bmbm = #{bmbm}))
+        </if>
+        <if test="field == null">
+            order by a.sort_no
+        </if>
+        <if test="field !=null or order != null">
+            order by ${field} ${order}
+        </if>
+
+
+    </select>
+
+    <select id="selectByJcbm" resultType="com.bp.sys.po.BasePolice">
+        SELECT a.*,t.name as bgqzj_name,t1.name as jx_name,t2.`bmmc`AS bmmc,
+      (SELECT d.name FROM ser_dictionary AS d WHERE d.type ='xzzw' AND a.`xzzw`= d.code) AS xzzwname
+         FROM base_police a
+        LEFT JOIN ser_dictionary t ON a.zj = t.code AND t.type='zjq'
+        LEFT JOIN ser_dictionary t1 ON a.jx = t1.code AND t1.type='jx'
+        LEFT JOIN base_department t2 ON a.`bmbm`=t2.`bmbm`
+        WHERE jcbm=#{jcbm}
+
+    </select>
+    <select id="selectOrderByXzzw" resultType="com.bp.sys.po.BasePolice">
+        SELECT uuid, xm,xzzw ,sort_no FROM base_police ORDER BY IFNULL (xzzw,'999')
+    </select>
+
+    <select id="selectMaxNo" resultType="java.lang.Integer">
+        SELECT MAX(sort_no) FROM base_police
+    </select>
+    <select id="selectMaxNoByXzzw" resultType="java.lang.Integer">
+        SELECT MAX(sort_no) FROM base_police WHERE xzzw=#{xzzw}
+    </select>
+    <select id="selectByJcxm" resultType="com.bp.sys.po.BasePolice" parameterType="java.util.HashMap">
+        SELECT * FROM base_police WHERE xm = #{jcxm}
+        AND ryzt = '02'
+        AND (bmbm = #{bmbm} or bmbm in (select sjbmbm from base_department where bmbm = #{bmbm})) limit 0,1
+    </select>
+    <select id="findByBmbm" resultType="com.bp.sys.po.BasePolice">
+
+        SELECT a.*,b.bmmc from base_police a
+        left join base_department b on a.bmbm = b.bmbm
+        where a.bmbm=#{bmbm}
+    </select>
+
+    <select id="selectListOwn" parameterType="java.util.HashMap" resultType="java.util.Map">
+        select bp.*, bd.bmmc from base_police bp
+        left join base_department bd on bp.bmbm = bd.bmbm
+        where (bd.bmlx not in ( '03', '04' )
+        <if test="bmbmChange != null and bmbmChange != ''">
+            or ((bd.bmbm = #{bmbmChange} or bd.bmbm in (select sjbmbm from base_department where bmbm = #{bmbmChange})
+            or (bd.bmbm like concat('%', #{bmbmChange}, '%'))))
+        </if>)
+    </select>
+    <select id="findPoliceIsYwry" resultType="com.bp.sys.po.BasePolice">
+        SELECT a.*,c.bmmc FROM base_police a RIGHT join medical_ywry_info b on a.jcbm = b.jcbm and sfshyypq=0
+        lEFT JOIN base_department c on a.bmbm = c.bmbm
+    </select>
+    <select id="findBySfzh" resultType="com.bp.sys.po.BasePolice" parameterType="java.lang.String">
+        SELECT a.* from base_police a where a.jmsfzhm=#{sfzh}
+    </select>
+    <select id="selectAll" resultType="com.bp.sys.po.BasePolice">
+
+        SELECT
+        a.*,b.bmmc, c.jdjgmc
+        FROM
+        base_police a
+        left join base_department b on a.bmbm = b.bmbm
+        left join base_org c on a.jdjgbm = c.jdjgbm
+        WHERE 1=1
+        <if test="keyWord != '' and keyWord != null">
+            and (a.jcbm like concat('%',#{keyWord},'%') or a.xm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="xm!=null and xm != ''">
+            and a.xm like concat('%',#{xm,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="jcbm!=null and jcbm != ''">
+            and a.jcbm like concat('%',#{jcbm,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="xb!=null and xb != ''">
+            and a.xb=#{xb}
+        </if>
+        <if test="jx!=null and jx != ''">
+            and a.jx=#{jx}
+        </if>
+        <if test="xzzw!=null and xzzw != ''">
+            and a.xzzw=#{xzzw}
+        </if>
+        <if test="ryzt!=null and ryzt != ''">
+            and a.ryzt=#{ryzt}
+        </if>
+        <if test="startAge!=null and startAge != ''">
+            and a.nl <![CDATA[ >= ]]>#{startAge}
+        </if>
+        <if test="endAge!=null and endAge != ''">
+            and a.nl <![CDATA[ <= ]]>#{endAge}
+        </if>
+        <if test="startTime!=null and startTime != ''">
+            and a.jrbdwrq <![CDATA[ >= ]]>#{startTime}
+        </if>
+        <if test="endTime!=null and endTime != ''">
+            and a.jrbdwrq <![CDATA[ <= ]]>#{endTime}
+        </if>
+        <if test="startXl!=null and startXl != ''">
+            and a.xl <![CDATA[ >= ]]>#{startXl}
+        </if>
+        <if test="endXl!=null and endXl != ''">
+            and a.xl <![CDATA[ <= ]]>#{endXl}
+        </if>
+        <if test="startXw!=null and startXw != ''">
+            and a.zgxw <![CDATA[ <= ]]>#{startXw}
+        </if>
+        <if test="endXw!=null and endXw != ''">
+            and a.zgxw <![CDATA[ <= ]]>#{endXw}
+        </if>
+        <if test="deptCode!=null and deptCode!=''">
+            and b.dept_code like concat('',#{deptCode,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and (a.bmbm = #{bmbm} or a.bmbm in (select bd_.sjbmbm from base_department bd_ where bd_.bmbm = #{bmbm}))
+        </if>
+        <!--<if test="bmbm!=null and bmbm != ''">-->
+        <!--and a.bmbm=#{bmbm}-->
+        <!--</if>-->
+        <!--<if test="page !=null  or limit !=null ">-->
+        <!--limit ${page},${limit}-->
+        <!--</if>-->
+        order by a.sort_no
+
+    </select>
+
+    <select id="selectExportList" resultType="com.bp.sys.po.BasePoliceExport">
+        SELECT bo.jdjgmc, bd.bmmc, bp.jmsfzhm, bp.xm, sd_1.name as xzzw, sd_2.name as zj,
+               bp.rtzjrq, bp.rxzrq, bp.jcbm, sd_3.name as xb, sd_4.name as mz, bp.csrq,
+               bp.jg, bp.csd, bp.cjgzsj, sd_5.name as zzmm, bp.rdrq as cjzzrq, sd_6.name as ryzt,
+               sd_7.name as qrzxl, sd_8.name as qrzxw, bp.zzxl, bp.zzxw, sd_9.name as xl,
+               sd_10.name as zgxw, bp.xxmc, bp.zy, bp.zzbyxx, bp.zzsxzy, bp.zyjszc, sd_11.name as jx,
+               sd_12.name as jxbglx, bp.jrbdwrq,
+               (case bp.sfjrjwtxl when null then ''
+               when 0 then '否'
+               when 1 then '是'
+               end) as sfjrjwtxl
+               , bp.lxfs as bgdh, bp.dh, sd_13.name as jclx,
+               bp.xx, sd_14.name as jkzk, sd_15.name as hyzk, bp.gwmc
+        FROM base_police bp
+	    LEFT JOIN base_org bo ON bp.jdjgbm = bo.jdjgbm
+	    LEFT JOIN base_department bd ON bp.bmbm = bd.bmbm
+	    left join ser_dictionary sd_1 on sd_1.code = bp.xzzw and sd_1.type = 'xzzw'
+	    left join ser_dictionary sd_2 on sd_2.code = bp.jx and sd_2.type = 'jzjb'
+	    left join ser_dictionary sd_3 on sd_3.code = bp.xb and sd_3.type = 'sex'
+	    left join ser_dictionary sd_4 on sd_4.code = bp.mz and sd_4.type = 'folk'
+        left join ser_dictionary sd_5 on sd_5.code = bp.zzmm and sd_5.type = 'zzmm'
+	    left join ser_dictionary sd_6 on sd_6.code = bp.ryzt and sd_6.type = 'jcryzt'
+	    left join ser_dictionary sd_7 on sd_7.code = bp.qrzxl and sd_7.type = 'education'
+	    left join ser_dictionary sd_8 on sd_8.code = bp.qrzxw and sd_8.type = 'xw'
+	    left join ser_dictionary sd_9 on sd_9.code = bp.xl and sd_9.type = 'education'
+        left join ser_dictionary sd_10 on sd_10.code = bp.zgxw and sd_10.type = 'xw'
+	    left join ser_dictionary sd_11 on sd_11.code = bp.jx and sd_11.type = 'jx'
+	    left join ser_dictionary sd_12 on sd_12.code = bp.jxbglx and sd_12.type = 'jxbdlx'
+	    left join ser_dictionary sd_13 on sd_13.code = bp.jclx and sd_13.type = 'rylx'
+	    left join ser_dictionary sd_14 on sd_14.code = bp.jkzk and sd_14.type = 'jkzk'
+	    left join ser_dictionary sd_15 on sd_15.code = bp.hyzk and sd_15.type = 'hyzk'
+    </select>
+    <!-- 警察通讯录-->
+    <select id="selectPoliceAddressBook" resultType="java.util.Map">
+        SELECT
+        t1.uuid,
+        t1.xm AS NAME,
+        t1.bmbm,
+        '999' AS dept_code,
+        t2.dept_code AS sj_dept_code,
+        t1.lxfs AS phone,
+        t1.sfwcylxr
+        FROM
+        ( SELECT * FROM base_police WHERE lxfs IS NOT NULL AND lxfs != '' ) t1
+        LEFT JOIN base_department t2 ON t1.bmbm = t2.bmbm
+        where 1 = 1
+        <if test="sfwcylxr!=null and sfwcylxr != ''">
+            and t1.sfwcylxr=#{sfwcylxr}
+        </if>
+        <if test="jcxm!=null and jcxm != ''">
+            and t1.xm like concat('%',#{jcxm},'%')
+        </if>
+        UNION
+        SELECT
+        UUID,
+        bmmc AS NAME,
+        bmbm,
+        dept_code,
+        sj_dept_code,
+        '' AS phone,
+        '' AS sfwcylxr
+
+        FROM
+        base_department
+        WHERE bmbm!='001'
+        AND bmbm!='2220021'
+        AND bmbm!='3601'
+        <if test="sfwcylxr!=null and sfwcylxr != ''">
+            AND sj_dept_code!='01'
+            AND sj_dept_code!='0111'
+            AND sj_dept_code!='0112'
+            AND sj_dept_code!='0107'
+            AND sj_dept_code!='0109'
+            AND sj_dept_code!='0110'
+            AND sj_dept_code!='0108'
+        </if>
+        ORDER BY bmbm ASC
+
+    </select>
+
+    <update id="updateAddressState">
+        UPDATE base_police SET sfwcylxr = #{sfwcylxr} WHERE jcbm = #{jcbm}
+    </update>
+
+</mapper>
+

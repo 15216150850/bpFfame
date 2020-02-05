@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseZoneUserRecordMapper">
+
+    <!-- 带参数查询分区组织人员任免记录列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,zone_user_id,jcbm,duty_code,record_type,inserter,insert_time,updater,update_time
+        from base_zone_user_record where 1=1
+    </select>
+</mapper>
+

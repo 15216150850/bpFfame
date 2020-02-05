@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.JzxnsjfxMapper">
+
+    <!-- 带参数查询戒治效能数据分析列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        j.uuid,ba.jdrybm, j.sltdxn, j.xlkf, j.rznl, j.shsy, j.xwfs, j.zf,
+        ba.xm, ba.rsrq, ba.szdd
+        from base_addicts ba left join jzxnsjfx j on ba.jdrybm = j.jdrybm
+        where ba.jdryzt in ('01','02','03','04')
+        and (ba.fqqk = '03' or (TIMESTAMPDIFF(DAY, ba.rsrq ,now()) >= 365))
+        <if test="keyWord != null and keyWord != ''">
+            and (ba.xm like concat('%',#{keyWord},'%') or ba.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        group by ba.jdrybm
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by ba.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <select id="selectByJdrybm" parameterType="java.lang.String" resultType="com.bp.sys.po.Jzxnsjfx">
+        select j.* from jzxnsjfx j where j.jdrybm = #{jdrybm} limit 0,1
+    </select>
+
+    <select id="selectAvg" parameterType="java.lang.String" resultType="java.lang.Float">
+        select TRUNCATE(AVG(j.zf),2) from jzxnsjfx j where DATE_FORMAT(j.insert_time,'%Y-%m') =
+        DATE_FORMAT(now(),'%Y-%m')
+    </select>
+
+    <!-- 大数据-戒治效能-查询人员列表 -->
+    <select id="selectJzxnList" resultType="java.util.Map" parameterType="java.util.Map">
+        select t1.jdrybm, t1.xm, t1.szdd, j.zf
+        from (
+        select t1.* from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1 and t1.jdryzt in ('01','02','03','04')
+        and (t1.fqqk = '03' or (TIMESTAMPDIFF(DAY, t1.rsrq ,now()) >= 365))
+        <if test="keyWord != null and keyWord != ''">
+            and (t1.xm like concat('%',#{keyWord},'%') or t1.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+            <!--档案补录追加条件，只有在生理脱毒，教育适应区可补录-->
+            <if test="flag!=null and flag!=''">
+                and (t1.fqqk='01' or t1.fqqk='02')
+            </if>
+        </if>
+        order by DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) DESC
+        <if test="page !=null  or limit !=null ">
+            limit ${page},${limit}
+        </if>
+        ) t1 left join jzxnsjfx j on t1.jdrybm = j.jdrybm
+    </select>
+
+    <!-- 大数据-戒治效能-查询人员列表数量 -->
+    <select id="selectJzxnListCount" resultType="java.lang.Long">
+        select count(1)
+        from (
+        select t1.jdrybm from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1 and t1.jdryzt in ('01','02','03','04')
+        and (t1.fqqk = '03' or (TIMESTAMPDIFF(DAY, t1.rsrq ,now()) >= 365))
+        <if test="keyWord != null and keyWord != ''">
+            and (t1.xm like concat('%',#{keyWord},'%') or t1.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+            <!--档案补录追加条件，只有在生理脱毒，教育适应区可补录-->
+            <if test="flag!=null and flag!=''">
+                and (t1.fqqk='01' or t1.fqqk='02')
+            </if>
+        </if>
+        ) t1
+    </select>
+</mapper>
+

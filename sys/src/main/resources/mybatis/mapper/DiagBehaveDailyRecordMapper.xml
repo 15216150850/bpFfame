@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.DiagBehaveDailyRecordMapper">
+
+    <!--更新得分，修正数据-->
+    <update id="updateMonthCount">
+        update diag_behave_extra_grade a left join (select jdrybm,extra_grade_total as total from
+        diag_behave_extra_grade where year=date_format(#{preDate},'%Y') and month=date_format(#{preDate},'%m')) b on
+        a.jdrybm=b.jdrybm
+        set a.extra_grade_total=ifnull((ifnull(b.total,0)+a.sum_grade_month+a.outstanding_grade_month),0)
+        where a.year=date_format(#{recordDate},'%Y') and a.month=date_format(#{recordDate},'%m') and a.jdrybm=#{jdrybm}
+    </update>
+
+    <!-- 带参数查询日常计分明细列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        a.*,b.name AS gradeTypeCodeName,c.name AS gradeIndexCodeName,e.xm,e.szdd,d.content AS gradeContentName
+        from diag_behave_daily_record a
+        left join ser_dictionary b on a.grade_type_code=b.code and b.type='jflx'
+        left join ser_dictionary c on a.grade_index_code=c.code and c.type='jfxm'
+        left join diag_behave_grade_item d on a.grade_content_code=d.code
+        left join (select * from base_addicts) e on a.jdrybm=e.jdrybm
+        where 1=1
+        <!-- 数据权限控制，大队只能查所属大队信息 -->
+        <if test="bmbmChange!=null and bmbmChange!=''">
+            and e.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        <if test="jdrybm!=null and jdrybm!=''">
+            and e.jdrybm =#{jdrybm}
+        </if>
+        <if test="keyWord!=null and keyWord!=''">
+            and e.xm like concat('%',#{keyWord},'%')
+        </if>
+        <if test="bmbm!=null and bmbm!=''">
+            and e.bmbm like concat('',#{bmbm},'%')
+        </if>
+        <if test="xm!=null and xm!=''">
+            and e.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="recordDateStart!=null and recordDateStart!=''">
+            and a.record_date <![CDATA[ >= ]]>#{recordDateStart}
+        </if>
+        <if test="recordDateEnd!=null and recordDateEnd!=''">
+            and a.record_date <![CDATA[ <= ]]>#{recordDateEnd}
+        </if>
+        <if test="gradeTypeCode!=null and gradeTypeCode!=''">
+            and instr(#{gradeTypeCode},a.grade_type_code)>0
+        </if>
+        <if test="year!=null and year!=''">
+            and date_format(a.record_date,'%Y')=#{year}
+        </if>
+        <if test="month!=null and month!=''">
+            and date_format(a.record_date,'%m')=#{month}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time DESC
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <!--查询指定年月戒毒人员考评数据-->
+    <select id="selectRecordByMonth" resultType="java.util.Map">
+        select
+        a.*,b.name AS gradeTypeCodeName,c.name AS gradeIndexCodeName,e.xm,e.szdd,d.content AS
+        gradeContentName,concat(d.content,'(',a.content,')') AS contentAll,a.content AS acontent
+        from diag_behave_daily_record a
+        left join ser_dictionary b on a.grade_type_code=b.code and b.type='jflx'
+        left join ser_dictionary c on a.grade_index_code=c.code and c.type='jfxm'
+        left join diag_behave_grade_item d on a.grade_content_code=d.code
+        left join (select * from base_addicts) e on a.jdrybm=e.jdrybm
+        where 1=1
+        <if test="jdrybm!=null and jdrybm!=''">
+            and e.jdrybm =#{jdrybm}
+        </if>
+        <if test="year!=null and year!=''">
+            and date_format(a.record_date,'%Y')=#{year}
+        </if>
+        <if test="month!=null and month!=''">
+            and date_format(a.record_date,'%m')=#{month}
+        </if>
+    </select>
+
+    <!--查询戒毒人员月行为计分获得分合计，根据时间、戒毒人员、计分类型-->
+    <select id="selectScoreByMonth" resultType="java.lang.Double">
+        select IFNULL(sum(a.grade_change),0)
+            from diag_behave_daily_record a
+            left join diag_behave_grade_item b on a.grade_content_code=b.code
+        where a.jdrybm=#{jdrybm}
+        <if test="year!=null and year!=''">
+            and DATE_FORMAT(a.record_date,'%Y')=#{year}
+        </if>
+        <if test="month!=null and month!=''">
+            and DATE_FORMAT(a.record_date,'%m')=#{month}
+        </if>
+        <if test="gradeTypeCode!=null and gradeTypeCode!=''">
+            and a.grade_type_code=#{gradeTypeCode}
+        </if>
+        <if test="gradeIndexCode!=null and gradeIndexCode!=''">
+            and a.grade_index_code=#{gradeIndexCode}
+        </if>
+        <if test="jfxmlx!=null and jfxmlx!=''">
+            and b.jfxmlx=#{jfxmlx}
+        </if>
+    </select>
+</mapper>
+

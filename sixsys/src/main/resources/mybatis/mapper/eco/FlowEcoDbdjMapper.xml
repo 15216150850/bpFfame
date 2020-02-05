@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.eco.FlowEcoDbdjMapper">
+	
+	<!-- 带参数查询打版定价列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+        fed.uuid, fed.khmc, fed.pmkh, fed.bgr, fed.ddsl, fed.ygrcl, fed.yggfrcl,
+        fed.jhllsj, fed.jhscxzs, fed.jhrq, fed.gxjhj, fed.yjsm, fed.xgwj,
+        fed.sqr, fed.sqrbm, fed.sqsj, fed.jgddyj, fed.shxykyj, fed.swtpjg, fed.act_title,
+        fed.pid, fed.remark, fed.doc_state, fed.flow_sn, fed.flow_state, fed.inserter,
+        fed.insert_time, fed.updater, fed.update_time, fed.dbdjry, b.name as flow_state_name
+		from flow_eco_dbdj fed
+        left join t_dictionary b on fed.flow_state = b.code and b.type = 'flowState' where 1=1
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and fed.inserter = #{currentUserId}
+        </if>
+        <if test="flowState != null and flowState!=''">
+            AND( fed.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fed.flow_state=6 or fed.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fed.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fed.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (fed.pmkh like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="khmc != null and khmc != ''">
+            and (fed.khmc like concat('%',#{khmc},'%'))
+        </if>
+        <if test="dbdjxm != null and dbdjxm != ''">
+            and (fed.dbdjry like concat('%',#{dbdjxm},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fed.sqsj,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fed.sqsj,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by fed.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+</mapper>
+

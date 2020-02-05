@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.insp.FlowInspJmthspMapper">
+	
+	<!-- 带参数查询诫勉谈话审批表列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+			a.uuid,a.bh,d.name as flowStateName, b.xm as thdxname,c.xm as thrxm,a.thdxxm,a.csny,a.xb,a.xgwj,a.zzmm,a.gzdwjzw,a.thrxmtan,a.gzdwjzwtan,a.thsy,
+        a.sqr,a.sqrbm,a.inserter,a.insert_time,a.updater,a.update_time,a.act_title,a.pid,a.remark,
+        a.doc_state,a.flow_sn,a.flow_state,
+        (SELECT d.name FROM ser_dictionary AS d WHERE d.type ='sex' AND a.`xb`= d.code) AS xbname,
+        (SELECT e.name FROM ser_dictionary AS e WHERE e.type ='zzmm' AND a.`zzmm`= e.code) AS zzmmname
+		from flow_insp_jmthsp a
+		left join base_police b on a.thdxxm = b.jcbm
+		left join base_police c on a.thrxmtan = c.jcbm
+        left join t_dictionary d on a.flow_state = d.code and d.type = 'flowState'
+        where 1=1
+        <if test="flowState != null and flowState!=''">
+            AND( a.flow_state=#{flowState}
+            <if test="flowState==2">
+                or a.flow_state=6 or a.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or a.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or a.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="thdxxm !=null and txdxxm!=''">
+            and a.thdxxm = #{thdxxm}
+        </if>
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and a.inserter = #{currentUserId}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by a.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+</mapper>
+

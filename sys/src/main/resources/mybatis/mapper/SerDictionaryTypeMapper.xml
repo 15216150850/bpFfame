@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.SerDictionaryTypeMapper">
+
+    <!-- 带参数查询字典类型表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select id, code, name, remark, sort_no from ser_dictionary_type where 1=1
+        <if test="code!=''">
+            and code like concat('%',#{code},'%')
+        </if>
+        <if test="name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        order by sort_no asc
+
+    </select>
+
+    <!-- 检测字典编码 -->
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(id) from ser_dictionary_type where code=#{code}
+        <if test="id!=null">
+            and id != #{id}
+        </if>
+    </select>
+
+</mapper>
+

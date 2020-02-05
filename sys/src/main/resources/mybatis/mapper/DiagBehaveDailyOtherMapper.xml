@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.DiagBehaveDailyOtherMapper">
+
+    <!-- 带参数查询日常计分明细列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        a.*,b.name AS grade_type_code_name,c.name AS grade_index_code_name,e.xm,e.szdd,d.content AS grade_content_name,f.name AS flow_state_name
+        from diag_behave_daily_other a
+        left join ser_dictionary b on a.grade_type_code=b.code and b.type='jflx'
+        left join ser_dictionary c on a.grade_index_code=c.code and c.type='jfxm'
+        left join diag_behave_grade_item d on a.grade_content_code=d.code
+        left join (select * from base_addicts) e on a.jdrybm=e.jdrybm
+        left join t_dictionary f on a.flow_state = f.code and f.type='flowState'
+        where 1=1
+        <!-- 数据权限控制，大队只能查所属大队信息 -->
+        <if test="bmbmChange!=null and bmbmChange!=''">
+            and e.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        <if test="jdrybm!=null and jdrybm!=''">
+            and e.jdrybm =#{jdrybm}
+        </if>
+        <if test="keyWord!=null and keyWord!=''">
+            and e.xm like concat('%',#{keyWord},'%')
+        </if>
+        <if test="bmbm!=null and bmbm!=''">
+            and e.bmbm like concat('',#{bmbm},'%')
+        </if>
+        <if test="xm!=null and xm!=''">
+            and e.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="recordDateStart!=null and recordDateStart!=''">
+            and a.record_date <![CDATA[ >= ]]>#{recordDateStart}
+        </if>
+        <if test="recordDateEnd!=null and recordDateEnd!=''">
+            and a.record_date <![CDATA[ <= ]]>#{recordDateEnd}
+        </if>
+        <if test="gradeTypeCode!=null and gradeTypeCode!=''">
+            and instr(#{gradeTypeCode},a.grade_type_code)>0
+        </if>
+        <if test="year!=null and year!=''">
+            and date_format(a.record_date,'%Y')=#{year}
+        </if>
+        <if test="month!=null and month!=''">
+            and date_format(a.record_date,'%m')=#{month}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time DESC
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+</mapper>
+

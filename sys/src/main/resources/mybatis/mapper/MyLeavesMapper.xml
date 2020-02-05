@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.MyLeavesMapper">
+
+    <resultMap id="BaseResultMap" type="com.bp.sys.po.MyLeaves">
+        <id column="uuid" jdbcType="VARCHAR" property="uuid"/>
+        <result column="qjly" jdbcType="VARCHAR" property="qjly"/>
+        <result column="qjts" jdbcType="INTEGER" property="qjts"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="act_title" jdbcType="VARCHAR" property="actTitle"/>
+        <result column="pid" jdbcType="VARCHAR" property="pid"/>
+        <result column="doc_state" jdbcType="VARCHAR" property="docState"/>
+        <result column="flow_sn" jdbcType="VARCHAR" property="flowSn"/>
+        <result column="flow_state" jdbcType="INTEGER" property="flowState"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        uuid,qjly,qjts,title,act_title,pid,doc_state,flow_sn,flow_state,remark
+    </sql>
+
+    <!-- 添加请假流程 -->
+    <insert id="insert" parameterType="com.bp.sys.po.MyLeaves" useGeneratedKeys="true" keyProperty="uuid">
+        insert into my_leaves
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uuid != null">uuid,</if>
+            <if test="qjly != null">qjly,</if>
+            <if test="qjts != null">qjts,</if>
+            <if test="title != null">title,</if>
+            <if test="actTitle != null">act_title,</if>
+            <if test="pid != null">pid,</if>
+            <if test="docState != null">doc_state,</if>
+            <if test="flowSn != null">flow_sn,</if>
+            <if test="flowState != null">flow_state,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uuid != null">#{uuid,jdbcType=VARCHAR},</if>
+            <if test="qjly != null">#{qjly,jdbcType=VARCHAR},</if>
+            <if test="qjts != null">#{qjts,jdbcType=INTEGER},</if>
+            <if test="title != null">#{title,jdbcType=VARCHAR},</if>
+            <if test="actTitle != null">#{actTitle,jdbcType=VARCHAR},</if>
+            <if test="pid != null">#{pid,jdbcType=VARCHAR},</if>
+            <if test="docState != null">#{docState,jdbcType=VARCHAR},</if>
+            <if test="flowSn != null">#{flowSn,jdbcType=VARCHAR},</if>
+            <if test="flowState != null">#{flowState,jdbcType=INTEGER},</if>
+            <if test="remark != null">#{remark,jdbcType=VARCHAR},</if>
+        </trim>
+    </insert>
+
+    <!-- 删除请假流程 -->
+    <delete id="delete" parameterType="java.lang.String">
+        delete from my_leaves where uuid = #{uuid,jdbcType=VARCHAR}
+    </delete>
+
+    <!-- 批量删除请假流程 -->
+    <delete id="deleteByIds" parameterType="java.lang.String">
+        delete from my_leaves where uuid in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 修改请假流程 -->
+    <update id="update" parameterType="com.bp.sys.po.MyLeaves">
+        update my_leaves
+        <set>
+            <if test="uuid != null">uuid = #{uuid,jdbcType=VARCHAR},</if>
+            <if test="qjly != null">qjly = #{qjly,jdbcType=VARCHAR},</if>
+            <if test="qjts != null">qjts = #{qjts,jdbcType=INTEGER},</if>
+            <if test="title != null">title = #{title,jdbcType=VARCHAR},</if>
+            <if test="actTitle != null">act_title = #{actTitle,jdbcType=VARCHAR},</if>
+            <if test="pid != null">pid = #{pid,jdbcType=VARCHAR},</if>
+            <if test="docState != null">doc_state = #{docState,jdbcType=VARCHAR},</if>
+            <if test="flowSn != null">flow_sn = #{flowSn,jdbcType=VARCHAR},</if>
+            <if test="flowState != null">flow_state = #{flowState,jdbcType=INTEGER},</if>
+            <if test="remark != null">remark = #{remark,jdbcType=VARCHAR},</if>
+        </set>
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </update>
+
+
+    <!-- 根据ID查询请假流程 -->
+    <select id="selectById" resultType="java.util.Map">
+        select
+        uuid,qjly,qjts,title,act_title,pid,doc_state,flow_sn,flow_state,remark
+        from my_leaves
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据ID查询请假流程实体 -->
+    <select id="selectEntityById" resultMap="BaseResultMap">
+        select
+        uuid,qjly,qjts,title,act_title,pid,doc_state,flow_sn,flow_state,remark
+        from my_leaves
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 查询请假流程列表 -->
+    <select id="selectAll" resultType="java.util.Map">
+        select
+        uuid,qjly,qjts,title,act_title,pid,doc_state,flow_sn,flow_state,remark
+        from my_leaves
+    </select>
+
+    <!-- 带参数查询请假流程列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,qjly,qjts,title,act_title,pid,doc_state,flow_sn,flow_state,remark
+        from my_leaves where 1=1
+        <if test="page !=null  or limit !=null ">
+            limit ${page},${limit}
+        </if>
+    </select>
+
+    <!-- 带参数查询请假流程列表 -->
+    <select id="selectListCount" resultType="java.lang.Long">
+        select count(*) from (
+        select
+        uuid,qjly,qjts,title,act_title,pid,doc_state,flow_sn,flow_state,remark
+        from my_leaves where 1=1
+        )t
+    </select>
+    <select id="selectEntityByPid" resultMap="BaseResultMap">
+        select
+        *
+        from my_leaves
+        where pid = #{pid,jdbcType=INTEGER}
+    </select>
+
+    <update id="updateWorkFlowStateByPid">
+        UPDATE my_leaves SET doc_state=#{docState},flow_state=#{flowState} WHERE pid=#{pid}
+
+
+    </update>
+
+
+</mapper>
+

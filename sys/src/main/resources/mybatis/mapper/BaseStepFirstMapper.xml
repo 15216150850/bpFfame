@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseStepFirstMapper">
+    <!-- 带参数查询生理脱毒区阶段性诊断评估信息表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select t1.*,t2.bmmc from (
+        select a.*,b.xm,b.xb,b.fqqk,b.sfwzdry from base_step_first a left join (
+        select * from base_addicts where jdryzt in('01','02','03','04')
+        <if test="isHistory != null and isHistory !=''">
+            or (jdryzt ='11' and qzgljdjsrq > '2019-09-01')
+        </if>
+        ) b on a.jdrybm = b.jdrybm where 1=1
+        <if test="isHistory == null or isHistory ==''">
+            and b.fqqk='01'
+        </if>
+        <if test="status !=null and status!=''">
+            <if test="isHistory != null and isHistory !=''">
+                and a.status = 0 <!--如果是查询历史记录则查询无效状态的记录-->
+            </if>
+            <if test="isHistory == null or isHistory ==''">
+                and a.status = #{status} <!--如果不是查询历史记录则查询有效状态的记录-->
+            </if>
+        </if>
+        <if test="jdrybm !=null and jdrybm!=''">
+            and a.jdrybm = #{jdrybm}
+        </if>
+        ) t1
+        left join base_department t2 on t1.bmbm = t2.bmbm
+        where 1=1
+        <if test="xm !=null and xm!=''">
+            and t1.xm LIKE concat('%',#{xm},'%')
+        </if>
+        <if test="bmmc !=null and bmmc!=''">
+            and t2.bmmc LIKE concat('%',#{bmmc},'%')
+        </if>
+        <if test="flowState !=null and flowState!=''">
+            and t1.flow_state = #{flowState}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and t1.pgsj &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and t1.pgsj &lt;= #{endTime}
+        </if>
+        <if test="keyWord !=null and keyWord!=''">
+            and (t1. xm LIKE concat('%',#{keyWord},'%') or t1.jdrybm LIKE concat('%',#{keyWord},'%'))
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by ifnull(flow_state,'0.1') asc,insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <!-- 根据ID查询生理脱毒区阶段性诊断评估信息表 -->
+    <select id="selectEntityByJdrybm" resultType="com.bp.sys.po.BaseStepFirst">
+        select * from base_step_first
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        <if test="status != null and status != ''">
+            and status = #{status,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <!--修改戒毒人员生理脱毒区评估记录状态为无效-->
+    <update id="updateStateByJdrybm">
+        UPDATE base_step_first SET status='0' WHERE jdrybm=#{jdrybm}
+    </update>
+
+    <!-- 根据戒毒人员编码查询生理脱毒区（A1）的的详情 -->
+    <select id="evaluationByJdrybm" resultType="java.util.Map">
+        select jdylkhjg from base_step_first
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        and status = 1
+        order by insert_time desc
+        limit 1
+    </select>
+
+    <!-- 根据戒毒人员编码查询戒毒人员 a1，a2，a3 以及平均分 -->
+    <select id="selectAvg" resultType="java.util.Map">
+        SELECT TRUNCATE(t1.jdylkhjg,2) AS a1, TRUNCATE(t2.jdylkhjg,2) AS a2, TRUNCATE(t3.jdylkhjg,2) AS a3,
+        (SELECT TRUNCATE(AVG(jdylkhjg),2) FROM base_step_first ) AS a1avg,
+        (SELECT TRUNCATE(AVG(jdylkhjg),2) FROM base_step_second) AS a2avg,
+        (SELECT TRUNCATE(AVG(jdylkhjg),2) FROM base_step_third) AS a3avg
+        FROM base_step_first t1
+        LEFT JOIN base_step_second t2 ON t1.jdrybm = t2.jdrybm
+        LEFT JOIN base_step_third t3 ON t1.jdrybm = t3.jdrybm
+        WHERE t1.jdrybm = #{jdrybm,jdbcType=VARCHAR}
+    </select>
+
+    <!--获取戒毒人员最新M1的记录-->
+    <select id="getNewScore" resultType="com.bp.sys.po.BaseStepFirst">
+        select * from base_step_first where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        order by insert_time desc limit 1
+    </select>
+
+</mapper>
+

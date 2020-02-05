@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.hr.FlowHrZdjldgbxbMapper">
+	
+	<!-- 带参数查询中队级领导干部选拔任用工作列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+        fhz.uuid,json_length(fhz.jcxx) as xbrs, fhz.sqly, fhz.xgwj, fhz.sqr, fhz.sqrbm, fhz.sqsj,
+        fhz.zwhzksj, fhz.zwhyjnr, fhz.zzchysj, fhz.zzchynr, fhz.ldxzhysj, fhz.ldxzhynr,
+        fhz.gs, fhz.hccl, fhz.act_title, fhz.pid, fhz.remark, fhz.doc_state, fhz.flow_sn, fhz.flow_state,
+        b.name as flow_state_name
+		from flow_hr_zdjldgbxb fhz left join t_dictionary b on flow_state = b.code and b.type = 'flowState' where 1=1
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and fhz.inserter = #{currentUserId}
+        </if>
+        <if test="flowState != null and flowState!=''">
+            AND( fhz.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fhz.flow_state=6 or fhz.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fhz.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fhz.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (fhz.act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fhz.sqsj,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fhz.sqsj,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by fhz.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+</mapper>
+

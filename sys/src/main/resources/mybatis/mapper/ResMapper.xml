@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.ResMapper">
+
+    <!-- 查询全部资源信息 -->
+    <select id="selectAll" resultType="com.bp.sys.po.Res">
+        select id, name, url, pid, permission, sort_no, type,target from t_res order by sort_no asc
+    </select>
+
+    <!-- 根据pid查询子级资源树列表 -->
+    <select id="selectTableList" resultType="com.bp.sys.po.dto.ResDto">
+        select id, name, url, pid, permission, sort_no, type,target,res_hasChild(id) haveChild from t_res where
+        pid=#{pid} order by sort_no asc
+    </select>
+
+    <!-- 查询全部资源树信息 -->
+    <select id="selectAllTree" resultType="java.util.Map">
+        select id, name, pid as pId, permission, sort_no, type,target from t_res order by sort_no asc
+    </select>
+
+    <!-- 获取角色资源 -->
+    <select id="selectListByRoleCode" resultType="java.util.Map">
+        <if test="roleCode!='admin'">
+            select s2.* from
+            (select * from t_role_res where role_code=#{roleCode})s1 left join
+            (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id
+            is not null
+        </if>
+        <if test='roleCode=="admin"'>
+            select id, name, url, pid, permission, sort_no, type,target from t_res order by sort_no asc
+        </if>
+
+    </select>
+
+    <!-- 多功能授权后登录获取账号资源 -->
+    <select id="selectListByUser" resultType="java.util.Map">
+        <if test="roleCode!='admin'">
+        select tempt.* from (
+            (select s2.* from
+            (select * from t_role_res where role_code in(select role_code from t_user_roles where user_id=#{userId}))s1
+            left join
+            (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id
+            is not null)
+            union
+            (select s2.* from
+            (select * from t_user_res where user_id=#{userId})s1 left join
+            (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id
+            is not null)
+            union
+            (select s2.* from
+            (select b.res_id from t_temp_res a left join t_temp_res_info b on a.id=b.pid where
+            instr(user_id,#{userId})>0 and NOW()<![CDATA[ >= ]]> a.start_time and NOW()<![CDATA[ <= ]]>a.end_time)s1
+            left join
+            (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id
+            is not null)) tempt
+            order by tempt.sort_no asc
+        </if>
+        <if test='roleCode=="admin"'>
+            select id, name, url, pid, permission, sort_no, type,target from t_res order by sort_no asc
+        </if>
+
+    </select>
+
+    <!-- 获取用户单独功能授权资源 -->
+    <select id="selectListByUserId" resultType="java.util.Map">
+        select s2.* from
+        (select * from t_user_res where user_id=#{userId})s1 left join
+        (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id is
+        not null
+    </select>
+
+    <!-- 带参数查询 -->
+    <select id="selectList" resultType="java.util.Map">
+        select id, name, url, pid, permission, sort_no, type,target,res_hasChild(id) hasChild from t_res where
+        pid=#{pid} order by sort_no asc
+    </select>
+
+
+    <!-- 根据pid查询 -->
+    <select id="selectListByPid" resultType="java.util.Map">
+        select id, name, url, pid, permission, sort_no, type,target,res_hasChild(id) hasChild from t_res where
+        pid=#{pid} order by sort_no asc
+    </select>
+
+    <!-- 查询临时授权根据temp_res表ID -->
+    <select id="selectListByTempResId" resultType="java.util.Map">
+        select s2.* from
+        (select * from t_temp_res_info where pid=#{pid})s1 left join
+        (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id is
+        not null
+    </select>
+
+    <!-- 获取用户角色授权全部资源 -->
+    <select id="selectRoleResByUserId" resultType="java.util.Map">
+        select s2.* from
+        (select id, name, url, pid, permission, sort_no, type,target from t_res)s2
+        where s2.id is not null and s2.id in(select b.res_id from t_user_roles a left join t_role_res b on
+        a.role_code=b.role_code where a.user_id=#{userId})
+    </select>
+    <select id="selectRoleUrlResByUserId" resultType="java.util.Map">
+
+        <if test="code != 'admin'">
+            (select s2.* from
+            (select * from t_role_res where role_code in(select role_code from t_user_roles where user_id=#{userId}))s1
+            left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res where type='url')s2 on s1.res_id = s2.id
+            where s2.pid=#{pid} order by sort_no asc)
+            union
+            (select s2.* from
+            (select * from t_user_res where user_id=#{userId})s1 left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res where type='url')s2 on s1.res_id = s2.id
+            where s2.pid=#{pid} order by sort_no asc)
+            union
+            (select s2.* from
+            (select b.res_id from t_temp_res a left join t_temp_res_info b on a.id=b.pid where
+            instr(user_id,#{userId})>0 and NOW()<![CDATA[ >= ]]> a.start_time and NOW()<![CDATA[ <= ]]>a.end_time)s1
+            left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res where type='url')s2 on s1.res_id = s2.id
+            where s2.pid=#{pid} order by sort_no asc)
+        </if>
+        <!-- 超级管理员拥有所有权限 -->
+        <if test="code == 'admin'">
+            select id, name, url, pid, sort_no, type,target,icon from t_res where type='url' and pid=#{pid} order by
+            sort_no asc
+        </if>
+    </select>
+
+    <select id="selectRoleUrlResByUserIdSjpt" resultType="java.util.Map">
+        <if test="code != 'admin'">
+            (select s2.* from
+            (select * from t_role_res where role_code in(select role_code from t_user_roles where user_id=#{userId}))s1
+            left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res_sjpt where type='url')s2 on s1.res_id =
+            s2.id where s2.pid=#{pid} order by sort_no asc)
+            union
+            (select s2.* from
+            (select * from t_user_res where user_id=#{userId})s1 left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res_sjpt where type='url')s2 on s1.res_id =
+            s2.id where s2.pid=#{pid} order by sort_no asc)
+            union
+            (select s2.* from
+            (select b.res_id from t_temp_res a left join t_temp_res_info b on a.id=b.pid where
+            instr(user_id,#{userId})>0 and NOW()<![CDATA[ >= ]]> a.start_time and NOW()<![CDATA[ <= ]]>a.end_time)s1
+            left join
+            (select id, name, url, pid, sort_no, type,target,icon from t_res_sjpt where type='url')s2 on s1.res_id =
+            s2.id where s2.pid=#{pid} order by sort_no asc)
+        </if>
+        <!-- 超级管理员拥有所有权限 -->
+        <if test="code == 'admin'">
+            select id, name, url, pid, sort_no, type,target,icon from t_res_sjpt where type='url' and pid=#{pid} order
+            by sort_no asc
+        </if>
+    </select>
+
+    <select id="selectRoleResByUser" resultType="java.util.Map">
+    select * from (
+        (select s2.* from
+        (select * from t_role_res where role_code in(select role_code from t_user_roles where user_id=#{userId}))s1 left
+        join
+        (select id, name, url, pid as pId, sort_no, type,target,icon from t_res)s2 on s1.res_id = s2.id where 1=1 order
+        by sort_no asc)
+        union
+        (select s2.* from
+        (select * from t_user_res where user_id=#{userId})s1 left join
+        (select id, name, url, pid as pId, sort_no, type,target,icon from t_res)s2 on s1.res_id = s2.id where 1=1 order
+        by sort_no asc)
+        union
+        (select s2.* from
+        (select b.res_id from t_temp_res a left join t_temp_res_info b on a.id=b.pid where instr(user_id,#{userId})>0
+        and NOW()<![CDATA[ >= ]]> a.start_time and NOW()<![CDATA[ <= ]]>a.end_time)s1 left join
+        (select id, name, url, pid as pId, sort_no, type,target,icon from t_res)s2 on s1.res_id = s2.id where 1=1 order
+        by sort_no asc)
+    ) temp where  id is not null
+    </select>
+</mapper>

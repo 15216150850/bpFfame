@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.hr.FlowHrLdgbjqsxbMapper">
+	
+	<!-- 带参数查询领导干部近亲属选拔任用工作列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+        fhl.uuid, fhl.jcbm, JSON_LENGTH(fhl.jcqsxx) qsrs, fhl.yjsm, fhl.xgwj, fhl.sqr, fhl.sqrbm, fhl.sqsj, fhl.zzchysj, fhl.zzchynr, fhl.mzcprs, fhl.mzyxps,
+        fhl.ldxzhysj, fhl.ldxzhynr, fhl.ydrs, fhl.sdrs, fhl.cgd, fhl.gs, fhl.hccl, b.name as flow_state_name,
+        fhl.act_title, fhl.pid, fhl.remark, fhl.doc_state, fhl.flow_sn, fhl.flow_state, bp.xm as jcxm
+		from flow_hr_ldgbjqsxb fhl left join base_police bp on fhl.jcbm = bp.jcbm
+        left join t_dictionary b on fhl.flow_state = b.code and b.type = 'flowState' where 1=1
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and fhl.inserter = #{currentUserId}
+        </if>
+        <if test="flowState != null and flowState!=''">
+            AND( fhl.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fhl.flow_state=6 or fhl.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fhl.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fhl.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (fhl.act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="xm != null and xm != ''">
+            and (bp.xm like concat('%',#{xm},'%'))
+        </if>
+        <if test="sqr != null and sqr != ''">
+            and (fhl.sqr like concat('%',#{sqr},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fhl.insert_time,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fhl.insert_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by fhl.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+</mapper>
+

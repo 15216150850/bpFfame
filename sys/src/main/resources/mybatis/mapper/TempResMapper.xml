@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.TempResMapper">
+
+    <!-- 带参数查询临时授权列表 -->
+    <select id="selectList" resultType="com.bp.sys.po.TempRes">
+        select
+        id,title,remark,user_id,start_time,end_time,inserter,insert_time,updater,update_time
+        from t_temp_res where 1=1
+        <if test="title!=null and title!=''">
+            and title like concat('%',#{title},'%')
+        </if>
+        <if test="roleCode.toString()!='admin'">
+            and inserter=#{userId}
+        </if>
+    </select>
+
+    <!-- 删除用户临时授权资源(临时授权) -->
+    <delete id="deleteTempResInfo">
+        delete from t_temp_res_info where pid=#{pid}
+    </delete>
+
+    <!-- 批量添加用户临时授权资源 子表(临时授权) -->
+    <insert id="insertTempResInfo" parameterType="java.util.List">
+        insert into t_temp_res_info (pid,res_id,inserter,insert_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.pid},#{item.resId},#{item.inserter},NOW())
+        </foreach>
+    </insert>
+</mapper>
+

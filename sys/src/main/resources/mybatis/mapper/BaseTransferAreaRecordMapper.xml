@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseTransferAreaRecordMapper">
+
+    <!-- 带参数查询转区记录列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select t1.*,t2.xm,t3.bmmc from base_transfer_area_record t1
+        left join base_addicts t2 on t1.jdrybm = t2.jdrybm
+        left join base_department t3 on t1.now_bmbm = t3.bmbm
+        where 1=1
+        <if test="keyWord != null and keyWord != ''">
+            and (t1.jdrybm like concat('%',#{keyWord},'%') or t2.xm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="jdryxm != null and jdryxm !=''">
+            and t2.xm like concat('%', #{jdryxm}, '%')
+        </if>
+        <if test="nowArea != null and nowArea !=''">
+            and t1.now_area = #{nowArea}
+        </if>
+        <if test="isAdvice != null and isAdvice !=''">
+            and t1.is_advice = #{isAdvice}
+        </if>
+        <if test="bmmc != null and bmmc !=''">
+            and t3.bmmc = #{bmmc}
+        </if>
+        <if test="type != null and type !=''">
+            and t1.type = #{type}
+        </if>
+        order by is_advice asc, type asc,insert_time desc
+    </select>
+
+    <!--根据时间线修改戒毒人员分区情况 已废,预留-->
+    <select id="transferAreaByTime">
+        update base_addicts t1,base_transfer_area_record t2,(select * from base_transfer_area_record where type=0 and
+        TIMESTAMPDIFF(day,transfer_date,#{date,jdbcType=TIMESTAMP}) &gt;= 0) t3
+        set t1.fqqk =t3.next_area ,t2.type=1 where t1.jdrybm = t3.jdrybm and t2.jdrybm = t3.jdrybm
+    </select>
+
+    <!--时间线查询到期记录 已废,预留-->
+    <select id="selectUpdate" resultType="com.bp.sys.po.BaseTransferAreaRecordDto">
+        select * from base_transfer_area_record where type=0 and
+        TIMESTAMPDIFF(day,transfer_date,#{date,jdbcType=TIMESTAMP}) &gt;= 0
+    </select>
+
+    <!--根据通知书查询关联转区记录-->
+    <select id="selectByAdviceUuid" resultType="com.bp.sys.po.BaseTransferAreaRecordDto">
+        select t1.*,t2.xm as jdryxm, t3.bmmc as nowBmmc from base_transfer_area_record t1
+        left join base_addicts t2 on t1.jdrybm = t2.jdrybm
+        left join base_department t3 on t1.now_bmbm = t3.bmbm
+        where advice_uuid = #{adviceUuid}
+    </select>
+
+    <!-- 修改转区记录表状态(建议书新增时修改状态) -->
+    <update id="updateByJdrybm" parameterType="java.lang.String">
+        update base_transfer_area_record set advice_uuid=#{adviceUuid}, is_advice = #{isAdvice}, type = #{type} where
+        now_area = #{nowArea} and jdrybm in
+        <foreach item="jdrybm" collection="jdrybms" open="(" separator="," close=")">
+            #{jdrybm}
+        </foreach>
+    </update>
+
+    <!-- 修改转区记录表状态(转区调队时新增时修改状态为已转区) -->
+    <update id="updateByAdviceUuid" parameterType="java.lang.String">
+        update base_transfer_area_record set type = 1 where advice_uuid=#{adviceUuid}
+    </update>
+
+    <!-- 批量修改 -->
+    <update id="updateList" parameterType="com.bp.sys.po.BaseTransferAreaRecordDto">
+        <foreach collection="baseTransferAreaRecordDtoList" item="baseTransferAreaRecordDto" separator=";">
+            update base_transfer_area_record
+            <set>
+                <if test="baseTransferAreaRecordDto.uuid != null"> uuid = #{baseTransferAreaRecordDto.uuid,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.jdrybm != null"> jdrybm = #{baseTransferAreaRecordDto.jdrybm,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.nowArea != null"> now_area = #{baseTransferAreaRecordDto.nowArea,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.nowAreaName != null"> now_area_name = #{baseTransferAreaRecordDto.nowAreaName,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.nextArea != null"> next_area = #{baseTransferAreaRecordDto.nextArea,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.nextAreaName != null"> next_area_name = #{baseTransferAreaRecordDto.nextAreaName,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.transferDate != null"> transfer_date = #{baseTransferAreaRecordDto.transferDate,jdbcType=TIMESTAMP}, </if>
+                <if test="baseTransferAreaRecordDto.nextAreaDays != null"> next_area_days = #{baseTransferAreaRecordDto.nextAreaDays,jdbcType=INTEGER}, </if>
+                <if test="baseTransferAreaRecordDto.type != null"> type = #{baseTransferAreaRecordDto.type,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.inserter != null"> inserter = #{baseTransferAreaRecordDto.inserter,jdbcType=INTEGER}, </if>
+                <if test="baseTransferAreaRecordDto.insertTime != null"> insert_time = #{baseTransferAreaRecordDto.insertTime,jdbcType=TIMESTAMP}, </if>
+                <if test="baseTransferAreaRecordDto.updater != null"> updater = #{baseTransferAreaRecordDto.updater,jdbcType=INTEGER}, </if>
+                <if test="baseTransferAreaRecordDto.updateTime != null"> update_time = #{baseTransferAreaRecordDto.updateTime,jdbcType=TIMESTAMP}, </if>
+                <if test="baseTransferAreaRecordDto.nowBmbm != null"> now_bmbm = #{baseTransferAreaRecordDto.nowBmbm,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.nextBmbm != null"> next_bmbm = #{baseTransferAreaRecordDto.nextBmbm,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.isAdvice != null"> is_advice = #{baseTransferAreaRecordDto.isAdvice,jdbcType=VARCHAR}, </if>
+                <if test="baseTransferAreaRecordDto.adviceUuid != null"> advice_uuid = #{baseTransferAreaRecordDto.adviceUuid,jdbcType=VARCHAR}, </if>
+            </set>
+            where uuid = #{baseTransferAreaRecordDto.uuid,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+</mapper>
+

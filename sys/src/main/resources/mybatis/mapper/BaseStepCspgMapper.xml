@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseStepCspgMapper">
+
+
+    <!-- 带参数查询出所诊断评估列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select t1.*,t2.xm,t3.bmmc from (select * from base_step_cspg) t1
+        left join base_addicts t2 on t1.jdrybm = t2.jdrybm
+        left join base_department t3 on t2.bmbm = t3.bmbm where 1=1
+        <if test="keyWord != null and keyWord !=''">
+            and (t1.jdrybm like concat('%',#{keyWord},'%') or t2.xm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="xm != null and xm!= ''">
+            and t2.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="bmmc != null and bmmc!= ''">
+            and t3.bmmc like concat('%',#{bmmc},'%')
+        </if>
+        <if test="startTime != null and startTime!= ''">
+            and t1.pgrq &gt; #{startTime}
+        </if>
+        <if test="endTime != null and endTime!= ''">
+            and t1.pgrq &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by ifnull(flow_state,'0.1') asc,insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+
+    <!--根据pid获取出所诊断评估-->
+    <select id="selectTByPid" resultType="com.bp.sys.po.BaseStepCspg">
+        select * from base_step_cspg where pid = #{pid,jdbcType=VARCHAR}
+    </select>
+
+    <!--工作流修改状态-->
+    <update id="updateWorkFlowStateByPid">
+        UPDATE base_step_cspg SET doc_state=#{docState},flow_state=#{flowState} WHERE pid=#{pid}
+    </update>
+
+</mapper>
+

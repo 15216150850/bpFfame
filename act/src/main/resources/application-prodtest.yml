@@ -1,0 +1,55 @@
+server:
+  port: 0
+spring:
+  redis:
+    host: 30.129.3.25
+    port: 6379
+    password:
+  rabbitmq:
+    host: 30.129.3.25
+    port: 5672
+    username: admin
+    password: Bp12345
+    virtual-host: root
+  datasource:
+    url: jdbc:mysql://30.129.3.20:3306/wisdom_prison_sys?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    username: root
+    password: Bp12345
+    type: com.alibaba.druid.pool.DruidDataSource
+  jackson:
+    default-property-inclusion: NON_NULL
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      fail-on-empty-beans: false
+      fail-on-self-references: false
+  application:
+    name: act
+  activiti:
+    check-process-definitions: false
+security:
+  oauth2:
+    resource:
+      user-info-uri: http://30.129.3.25/oauth/user-me
+      prefer-token-info: false
+eureka:
+  client:
+    service-url:
+      defaultZone: http://30.129.3.25:8010/eureka/
+  instance:
+    instance-id:  ${spring.cloud.client.ip-address}
+    #    ${spring.application.name}:${random.value}
+    prefer-ip-address: true
+mybatis:
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  config-location: classpath:mybatis/mybatis-config.xml
+logging:
+  level:
+    com.bp.act.mapper: debug
+  file: c:/log/act.log
+ribbon:
+  ReadTimeout: 6000
+  ConnectTimeout: 6000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 0
+  OkToRetryOnAllOperations: false

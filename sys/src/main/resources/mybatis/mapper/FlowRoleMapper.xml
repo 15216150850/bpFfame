@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.FlowRoleMapper">
+
+    <!-- 带参数查询流程角色列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        *
+        from flow_role where 1=1
+
+        <if test="keyWord !=null and keyWord!=''">
+            and name LIKE concat('%',#{keyWord},'%')
+        </if>
+        <if test="lcjsmc != null  and lcjsmc != '' ">
+            and name like concat('%', #{lcjsmc}, '%')
+        </if>
+        <if test="lcjsbm != null  and lcjsbm != '' ">
+            and code like concat('%', #{lcjsbm}, '%')
+        </if>
+    </select>
+
+
+    <select id="findByCode" resultType="com.bp.sys.po.FlowRole">
+
+        SELECT * FROM flow_role WHERE code=#{code}
+    </select>
+    <select id="findByCodeAndBmbm" resultType="com.bp.common.entity.SysUser">
+        select * from t_user where instr(#{userIds},concat(',',id,','))>0 and organization_code=#{bmbm}
+    </select>
+
+    <!--查询部门与用户组织树-->
+    <select id="selectDeptAndUserTree" resultType="java.util.Map">
+        select dept_code AS id,sj_dept_code AS pId,0 AS userId,bmmc AS name from
+        base_department <!--where length(dept_code)<![CDATA[ < ]]>6-->
+        UNION ALL
+        select uuid(),b.dept_code,id,name from t_user a left join base_department b on a.organization_code=b.bmbm where
+        organization_code is not null and organization_code!=''
+    </select>
+
+</mapper>
+

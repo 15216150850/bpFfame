@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.DiagBehaveExtraGradeMapper">
+
+    <update id="addDiagBehaveExtraGrade">
+        insert into
+        diag_behave_extra_grade(jdrybm,jdjgbm,bmbm,year,month,sum_grade_month,outstanding_grade_month,extra_grade,extra_grade_total,inserter,insert_time)
+        select
+        a.jdrybm,a.jdjgbm,a.bmbm,date_format(#{nowDate},'%Y'),date_format(#{nowDate},'%m'),0,0,0,ifnull(b.extra_grade_total,0),1,#{nowDate}
+        from base_addicts a
+        left join diag_behave_extra_grade b on a.jdrybm=b.jdrybm
+        and b.year=date_format(date_sub(#{nowDate}, interval 1 MONTH),'%Y')
+        and b.month=date_format(date_sub(#{nowDate}, interval 1 MONTH),'%m')
+        where a.jdryzt in('01','02','03','04') and a.type='01'
+        and not exists(select jdrybm from diag_behave_extra_grade where year=date_format(#{nowDate},'%Y') and
+        month=date_format(#{nowDate},'%m') and a.jdrybm=jdrybm)
+        <if test="jdrybm !=null and jdrybm !=''">
+            and a.jdrybm=#{jdrybm}
+        </if>
+    </update>
+
+    <update id="addDiagBehaveExtraGradeImport">
+        insert into
+        diag_behave_extra_grade(jdrybm,year,month,sum_grade_month,outstanding_grade_month,extra_grade,extra_grade_total,inserter,insert_time)
+        values
+        <foreach item="i" index="index" collection="array"
+                 separator=",">
+            (
+            #{jdrybm},date_format(DATE_ADD(#{rsrq},INTERVAL #{i} MONTH),'%Y'),date_format(DATE_ADD(#{rsrq},INTERVAL #{i}
+            MONTH),'%m'),0,0,0,0,1,DATE_FORMAT(DATE_ADD(#{rsrq},INTERVAL #{i} MONTH),'%Y-%m-1')
+            )
+        </foreach>
+
+    </update>
+
+    <!--更新月行为表现累计奖罚信息-->
+    <update id="updateCountDataByMonth">
+        update diag_behave_extra_grade
+        <set>
+            <!--<if test="id != null">id = #{id,jdbcType=INTEGER},</if>-->
+            <if test="jdrybm != null">jdrybm = #{jdrybm,jdbcType=VARCHAR},</if>
+            <if test="jdjgbm != null">jdjgbm = #{jdjgbm,jdbcType=VARCHAR},</if>
+            <if test="bmbm != null">bmbm = #{bmbm,jdbcType=VARCHAR},</if>
+            <if test="year != null">year = #{year,jdbcType=VARCHAR},</if>
+            <if test="month != null">month = #{month,jdbcType=VARCHAR},</if>
+            <if test="sumGradeMonth != null">sum_grade_month = #{sumGradeMonth,jdbcType=DOUBLE},</if>
+            <if test="outstandingGradeMonth != null">outstanding_grade_month =
+                #{outstandingGradeMonth,jdbcType=DOUBLE},
+            </if>
+            <if test="extraGrade != null">extra_grade = #{extraGrade,jdbcType=DOUBLE},</if>
+            <if test="extraGradeTotal != null">extra_grade_total = #{extraGradeTotal,jdbcType=DOUBLE},</if>
+            <if test="sfzdwj != null">sfzdwj = #{sfzdwj,jdbcType=INTEGER},</if>
+            <if test="sflb != null">sflb = #{sflb,jdbcType=INTEGER},</if>
+            <if test="inserter != null">inserter = #{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">updater = #{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+        </set>
+        where
+        jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        <!--and jdjgbm = #{jdjgbm,jdbcType=VARCHAR}
+        and bmbm = #{bmbm,jdbcType=VARCHAR}-->
+        and `year`=#{year,jdbcType=VARCHAR}
+        and `month`=#{month,jdbcType=VARCHAR}
+    </update>
+    <!--更新当前统计记录月之后的所有累计分数-->
+    <update id="updateGtCountDataByMonth">
+        update diag_behave_extra_grade
+        set extra_grade_total = extra_grade_total+#{changeExtraGradeTotal,jdbcType=DOUBLE}
+        where
+        jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        <!-- and jdjgbm = #{jdjgbm,jdbcType=VARCHAR}
+         and bmbm = #{bmbm,jdbcType=VARCHAR}
+      and time_to_sec(timediff(CONCAT(year,'-',month,'-00 00:00:00'),
+     CONCAT(#{year,jdbcType=VARCHAR},'-',#{month,jdbcType=VARCHAR},'-00 00:00:00')))>0-->
+        <!--日期相减得出天，更新大于0的数据-->
+        and DATEDIFF(CONCAT( year, '-', month,'-01'), CONCAT( #{year,jdbcType=VARCHAR},
+        '-',#{month,jdbcType=VARCHAR},'-01') )>0
+    </update>
+
+    <!--每日更新基础分到月表-->
+    <update id="updateBaseGrade">
+        update diag_behave_extra_grade a
+        left join (
+            select jdrybm,
+                ifnull(sum(check_base_grade1),0) AS check_base_grade1,
+                ifnull(sum(check_base_grade2),0) AS check_base_grade2,
+                ifnull(sum(check_base_grade3),0) AS check_base_grade3,
+                ifnull(sum(check_base_grade4),0) AS check_base_grade4,
+                ifnull(sum(check_base_grade5),0) AS check_base_grade5
+                from diag_behave_daily_grade
+            where date_format(record_date,'%Y-%m')=date_format(#{nowDate},'%Y-%m')
+            group by jdrybm
+        ) b on a.jdrybm=b.jdrybm
+        set a.sum_base_grade=(b.check_base_grade1+b.check_base_grade2+b.check_base_grade3+b.check_base_grade4+check_base_grade5),
+            a.zgsj=b.check_base_grade1,
+            a.jdkf=b.check_base_grade2,
+            a.jyjz=b.check_base_grade3,
+            a.kfld=b.check_base_grade4,
+            a.tbjj=b.check_base_grade5
+        where a.year=date_format(#{nowDate},'%Y') and a.month=date_format(#{nowDate},'%m')
+        <if test="jdrybm!=null and jdrybm!=''">
+            and a.jdrybm=#{jdrybm}
+        </if>
+    </update>
+
+    <!--更新折算行为考核分-->
+    <update id="updateRcxwkh">
+        UPDATE diag_behave_extra_grade SET extra_grade_total=#{rcxwkh} WHERE jdrybm = #{jdrybm,jdbcType=VARCHAR} and
+        year=date_format(NOW(),'%Y') and month=date_format(NOW(),'%m')
+    </update>
+
+    <update id="updateWorkFlowStateByPid">
+        UPDATE diag_behave_extra_grade SET doc_state=#{docState},flow_state=#{flowState} WHERE pid=#{pid}
+    </update>
+    <update id="updateByPid">
+        update diag_behave_extra_grade
+        <set>
+            <if test="id != null">id = #{id,jdbcType=INTEGER},</if>
+            <if test="jdrybm != null">jdrybm = #{jdrybm,jdbcType=VARCHAR},</if>
+            <if test="jdjgbm != null">jdjgbm = #{jdjgbm,jdbcType=VARCHAR},</if>
+            <if test="bmbm != null">bmbm = #{bmbm,jdbcType=VARCHAR},</if>
+            <if test="year != null">year = #{year,jdbcType=VARCHAR},</if>
+            <if test="month != null">month = #{month,jdbcType=VARCHAR},</if>
+            <if test="sumGradeMonth != null">sum_grade_month = #{sumGradeMonth,jdbcType=DOUBLE},</if>
+            <if test="outstandingGradeMonth != null">outstanding_grade_month =
+                #{outstandingGradeMonth,jdbcType=DOUBLE},
+            </if>
+            <if test="extraGrade != null">extra_grade = #{extraGrade,jdbcType=DOUBLE},</if>
+            <if test="extraGradeTotal != null">extra_grade_total = #{extraGradeTotal,jdbcType=DOUBLE},</if>
+            <if test="sfzdwj != null">sfzdwj = #{sfzdwj,jdbcType=INTEGER},</if>
+            <if test="inserter != null">inserter = #{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">updater = #{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="actTitle != null">act_title = #{actTitle,jdbcType=VARCHAR},</if>
+            <if test="pid != null">pid = #{pid,jdbcType=VARCHAR},</if>
+            <if test="remark != null">remark = #{remark,jdbcType=VARCHAR},</if>
+            <if test="docState != null">doc_state = #{docState,jdbcType=VARCHAR},</if>
+            <if test="flowSn != null">flow_sn = #{flowSn,jdbcType=VARCHAR},</if>
+            <if test="flowState != null">flow_state = #{flowState,jdbcType=INTEGER},</if>
+
+        </set>
+        where pid = #{pid,jdbcType=INTEGER}
+    </update>
+    <!--    定时器补充月考核的基础分-->
+    <update id="paddingBaseGrade">
+        update diag_behave_extra_grade set sum_base_grade=ifnull(sum_base_grade,0)+10,zgsj=ifnull(zgsj,0)+6,jdkf=ifnull(jdkf,0)+1,jyjz=ifnull(jyjz,0)+1,kfld=ifnull(kfld,0)+2,tbjj=ifnull(tbjj,0)+0
+        where 1=1
+        <if test="jdrybm!=null and jdrybm!=''">
+            and jdrybm=#{jdrybm}
+        </if>
+        <if test="nowDate!=null">
+            and date_format(#{nowDate},'%Y-%m')=concat(year,'-',month)
+        </if>
+    </update>
+
+    <!-- 带参数查询月行为表现累计奖罚(F)列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select a.*,b.name as flow_state_name from (
+        select a.*,c.xm,c.szdd
+        from diag_behave_extra_grade a
+        left join base_addicts c on a.jdrybm=c.jdrybm
+        where 1=1 and c.jdryzt in('01','02','03','04')
+        <!-- 数据权限控制，大队只能查所属大队信息 -->
+        <if test="bmbmChange!=null and bmbmChange!=''">
+            and c.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        <if test="xm!=null and xm!=''">
+            and c.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="startYearMonth!=null and startYearMonth!=''">
+            and concat(a.year,'-',a.month) <![CDATA[ >= ]]> #{startYearMonth}
+        </if>
+        <if test="endYearMonth!=null and endYearMonth!=''">
+            and concat(a.year,'-',a.month) <![CDATA[ <= ]]> #{endYearMonth}
+        </if>
+        <if test="jdrybm!=null and jdrybm!=''">
+            and c.jdrybm =#{jdrybm}
+        </if>
+        <if test="keyWord!=null and keyWord!=''">
+            and c.xm like concat('%',#{keyWord},'%')
+        </if>
+        <if test="bmbm!=null and bmbm!=''">
+            and c.bmbm like concat('',#{bmbm},'%')
+        </if>
+        <if test="flowState!=null and flowState!=''">
+            and a.flow_state=#{flowState}
+        </if>
+        ) a
+        LEFT JOIN t_dictionary b ON a.flow_state = b.code AND b.type = 'flowState'
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by a.year DESC,a.month DESC,a.insert_time DESC
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+
+    <select id="selectByCountData" resultType="com.bp.sys.po.DiagBehaveExtraGrade">
+        select
+        *
+        from diag_behave_extra_grade
+        where
+        jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        <!--and jdjgbm = #{jdjgbm,jdbcType=VARCHAR}
+        and bmbm = #{bmbm,jdbcType=VARCHAR}-->
+        and year=#{year,jdbcType=VARCHAR}
+        and month=#{month,jdbcType=VARCHAR}
+    </select>
+    <select id="findByPid" resultType="com.bp.sys.po.DiagBehaveExtraGrade">
+
+        select a.*,b.xm as jdryxm from diag_behave_extra_grade a
+
+        left join base_addicts b on a.jdrybm=b.jdrybm and b.jdryzt='01'
+        where pid=#{pid}
+    </select>
+
+    <!--行为表现考核结果C-->
+    <select id="selectXwbxkhjg" resultType="java.lang.Double">
+        select ifnull((24-ifnull(b.u,0)+(if(c.f>1000,1000,c.f)*0.016)),0) xwbxkhjg from base_addicts a
+        left join (select jdrybm,count(1) AS u from diag_behave_extra_grade where state > 6  and extra_grade
+        <![CDATA[ < ]]> 0 group by jdrybm) b on a.jdrybm=b.jdrybm
+        left join
+        (select a.*,ifnull(a.extra_grade_total,0) f from diag_behave_extra_grade a inner join(select
+        jdrybm,MAX(insert_time) AS insert_time from diag_behave_extra_grade where state > 6  group by jdrybm) b on
+        a.jdrybm=b.jdrybm and a.insert_time=b.insert_time) c on a.jdrybm=c.jdrybm
+        where  a.jdrybm=#{jdrybm}
+    </select>
+
+    <select id="selectFScore" resultType="java.util.Map">
+        select a.*,ifnull(a.extra_grade_total,0) f from diag_behave_extra_grade a
+        inner join(select jdrybm,MAX(concat(year,'-',month)) AS ym from diag_behave_extra_grade where state > 6  group
+        by jdrybm) b on a.jdrybm=b.jdrybm and concat(a.year,'-',a.month)=b.ym
+        where a.jdrybm=#{jdrybm}
+    </select>
+    <!--查询戒毒人员最后一条月考核记录-->
+    <select id="selectLastByJdrybm" resultType="com.bp.sys.po.DiagBehaveExtraGrade">
+        select
+        *
+        from diag_behave_extra_grade
+        where jdrybm=#{jdrybm} order by insert_time DESC limit 0,1
+    </select>
+    <select id="selectXz" resultType="java.util.Map">
+        select jdrybm,rq,ifnull(sum(fs2),0) fs1,ifnull(sum(base_grade),0) AS sum_base_grade from
+        (select jdrybm,date_format(record_date,'%Y-%m-01') as
+        rq,grade_type_code,grade_index_code,ifnull(sum(grade_change),0)-
+        case concat(grade_type_code,grade_index_code)
+        when '0301' then (6*count(grade_type_code)) +(ifnull(sum(grade_change),0)*2)
+        when '0302' then (1*count(grade_type_code)) +(ifnull(sum(grade_change),0)*2)
+        when '0303' then (1*count(grade_type_code)) +(ifnull(sum(grade_change),0)*2)
+        when '0304' then (2*count(grade_type_code)) +(ifnull(sum(grade_change),0)*2)
+        when '0305' then 0 +(ifnull(sum(grade_change),0)*2)
+        when '0101' then ifnull(sum(grade_change),0)
+        when '0102' then ifnull(sum(grade_change),0)
+        when '0103' then ifnull(sum(grade_change),0)
+        when '0104' then ifnull(sum(grade_change),0)
+        when '0105' then ifnull(sum(grade_change),0)
+        when '05' then ifnull(sum(grade_change),0)*2
+        else 0
+        end as fs2
+        case concat(grade_type_code,grade_index_code)
+        when '04' then ifnull(sum(grade_change),0)
+        else 0
+        end as tcbx,
+        case concat(grade_type_code,grade_index_code)
+        when '05' then ifnull(sum(grade_change),0)
+        else 0
+        end as yzwj
+        from diag_behave_daily_record
+        where 1=1
+        <if test="bm!=null and bm!=''">
+            and jdrybm=#{bm}
+        </if>
+        <if test="rq!=null">
+            and date_format(record_date,'%Y-%m-01')=date_format(#{rq},'%Y-%m-01')
+        </if>
+        group by jdrybm,date_format(record_date,'%Y-%m-01'),grade_type_code,grade_index_code ) t group by jdrybm,rq
+    </select>
+
+    <!-- 根据戒毒人员编码查询上个月近5个月月行为表现累计奖罚分F（当月）及全所戒毒人员的上个月近5个月月行为表现累计奖罚分F（当月） -->
+    <select id="evaluationDyxwbxfByJdrybm" resultType="java.util.Map">
+        SELECT
+        g.`year`,
+        g.`month`,
+        TRUNCATE(extra_grade,2) jdry_avg_score,
+        TRUNCATE(r_.total_avg_score,2) total_avg_score
+        FROM
+        diag_behave_extra_grade g
+        INNER JOIN (
+        SELECT
+        g_.`month`,
+        AVG(g_.extra_grade) total_avg_score
+        FROM
+        diag_behave_extra_grade g_
+        WHERE
+        1 = 1
+        AND `year` = YEAR (CURDATE( ))
+        AND g_.month = '09'
+        GROUP BY g_.`month`
+        ) r_ ON r_.`month` = g.`month`
+        WHERE
+        1 = 1
+        AND jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        AND `year` = YEAR (CURDATE( ))
+        AND g.month = '09'
+        GROUP BY g.`month`
+        ORDER BY
+        g.`month` DESC
+    </select>
+
+    <!-- 根据戒毒人员编码查询上个月近5个月行为表现累计奖罚分F（累计）及全所戒毒人员的上个月近5个月奖罚平均分F（累计） -->
+    <select id="evaluationZyxwbxfByJdrybm" resultType="java.util.Map">
+        SELECT
+        YEAR(t.`year_month`) `year`,
+        MONTH(t.`year_month`) `month`,
+        t_.jdry_total_score,
+        t_.total_avg_score
+        FROM(
+        SELECT
+        DATE_FORMAT( ( CURDATE( ) - INTERVAL 1 MONTH ), '%Y-%m-%d %H:%i:%s' ) AS `year_month` UNION
+        SELECT
+        DATE_FORMAT( ( CURDATE( ) - INTERVAL 2 MONTH ), '%Y-%m-%d %H:%i:%s' ) AS `year_month` UNION
+        SELECT
+        DATE_FORMAT( ( CURDATE( ) - INTERVAL 3 MONTH ), '%Y-%m-%d %H:%i:%s' ) AS `year_month` UNION
+        SELECT
+        DATE_FORMAT( ( CURDATE( ) - INTERVAL 4 MONTH ), '%Y-%m-%d %H:%i:%s' ) AS `year_month` UNION
+        SELECT
+        DATE_FORMAT( ( CURDATE( ) - INTERVAL 5 MONTH ), '%Y-%m-%d %H:%i:%s' ) AS `year_month`)t
+        LEFT JOIN (
+        SELECT
+        YEAR(STR_TO_DATE(CONCAT(g.`year`,'-',g.`month`), '%Y-%m-%d %H:%i:%s')) year,
+        MONTH(STR_TO_DATE(CONCAT(g.`year`,'-',g.`month`), '%Y-%m-%d %H:%i:%s')) month,
+        TRUNCATE(extra_grade_total,2) jdry_total_score,
+        TRUNCATE(r_.total_avg_score,2) total_avg_score
+        FROM
+        diag_behave_extra_grade g
+        INNER JOIN (
+        SELECT
+        g_.`month`,
+        AVG(g_.extra_grade_total) total_avg_score,
+        STR_TO_DATE(CONCAT(`year`,'-',`month`), '%Y-%m-%d %H:%i:%s')
+        FROM
+        diag_behave_extra_grade g_
+        WHERE
+        1 = 1
+        AND `year` = YEAR (CURDATE( ))
+        AND STR_TO_DATE(CONCAT(`year`,'-',`month`), '%Y-%m-%d %H:%i:%s') > DATE_SUB(CURDATE(),INTERVAL 5 MONTH)
+        GROUP BY g_.`month`
+        ) r_ ON r_.`month` = g.`month`
+        WHERE
+        1 = 1
+        AND jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        AND `year` = YEAR (CURDATE( ))
+        AND STR_TO_DATE(CONCAT(g.`year`,'-',g.`month`), '%Y-%m-%d %H:%i:%s') > DATE_SUB(CURDATE(),INTERVAL 5 MONTH)
+        GROUP BY g.`month`
+        )t_ ON YEAR(t.`year_month`) = t_.`year` AND MONTH(t.`year_month`) = t_.`month`
+
+    </select>
+    <!--大数据戒毒人员行为表现-->
+    <select id="selectBigDataXwbx" resultType="java.util.Map">
+        select
+        (select sum(check_base_grade1+check_base_grade2+check_base_grade3+check_base_grade4+check_base_grade5)/(select
+        count(1) from base_addicts where type='01' and jdryzt in('01','02','03','04') and rsrq<![CDATA[< ]]>#{sj}) from
+        diag_behave_daily_grade a left join base_addicts b on a.jdrybm=b.jdrybm where
+        date_format(a.record_date,'%Y-%m')=date_format(#{sj},'%Y-%m') and b.rsrq<![CDATA[< ]]>#{sj})AS yrjdf ,
+        (select sum(extra_grade)/(select count(1) from base_addicts where type='01' and jdryzt in('01','02','03','04')
+        and rsrq<![CDATA[< ]]>#{sj}) from diag_behave_extra_grade a left join base_addicts b on a.jdrybm=b.jdrybm where
+        concat(year,'-',month)=date_format(#{sj},'%Y-%m') and b.rsrq<![CDATA[< ]]>#{sj}) AS yrjjdf,
+        (select count(1) from diag_behave_extra_grade a left join base_addicts b on a.jdrybm=b.jdrybm where
+        a.extra_grade<![CDATA[>= ]]>0 and b.type='01' and b.jdryzt in('01','02','03','04') and
+        concat(year,'-',month)=date_format(#{sj},'%Y-%m') ) AS jdfrs,
+        (select count(1) from diag_behave_extra_grade a left join base_addicts b on a.jdrybm=b.jdrybm where
+        a.extra_grade <![CDATA[< ]]> 0 and b.type='01' and b.jdryzt in('01','02','03','04') and
+        concat(year,'-',month)=date_format(#{sj},'%Y-%m') ) AS jkfrs
+    </select>
+
+    <select id="selectBehaveExtraGradeCount" resultType="java.util.Map">
+        select * from (select a.xm,a.szdd,a.jdrybm,a.qzgljdksrq,a.qzgljdjsrq,a.bmbm,a.rsrq,b.zgsj,b.jdkf,b.jyjz,b.kfld,b.tbjj,b.xwbxjcf,
+        (select count(1) from diag_behave_extra_grade where (extra_grade <![CDATA[ < ]]> 0 or sfzdwj=1) and jdrybm=a.jdrybm) AS bhgys,
+        PERIOD_DIFF(DATE_FORMAT(NOW(),'%Y%m'),DATE_FORMAT(a.qzgljdksrq,'%Y%m')) AS yzxys,
+        ifnull((select a1.extra_grade_total f from diag_behave_extra_grade a1
+        inner join(select jdrybm,MAX(concat(year,'-',month)) AS ym from diag_behave_extra_grade where state>7 group
+        by jdrybm) b1 on a1.jdrybm=b1.jdrybm and concat(a1.year,'-',a1.month)=b1.ym
+        where a1.jdrybm=a.jdrybm),0) AS ljjdf,
+        (select count(1) from base_apply_ynhzdpg where month like concat('%',DATE_FORMAT(NOW(),'%Y-%m'),'%') and jdrybm=a.jdrybm) AS sftq
+        from base_addicts a left join (select jdrybm,
+        ifnull(SUM(check_base_grade1+check_grade1),0) AS zgsj,ifnull(SUM(check_base_grade2+check_grade2),0) AS jdkf,
+        ifnull(SUM(check_base_grade3+check_grade3),0) AS jyjz,ifnull(SUM(check_base_grade4+check_grade4),0) AS kfld,
+        ifnull(SUM(check_base_grade5+check_grade5),0) AS tbjj,
+        ifnull(SUM(check_base_grade1),0)+ifnull(SUM(check_base_grade2),0)+
+        ifnull(SUM(check_base_grade3),0)+ifnull(SUM(check_base_grade4),0)+
+        ifnull(SUM(check_base_grade5),0) AS xwbxjcf
+        from diag_behave_daily_grade group by jdrybm) b on a.jdrybm=b.jdrybm
+        where a.jdryzt in('01','02','03','04') and a.type='01') tmp
+        where 1=1
+        <if test="keyWord!=null and keyWord!=''">
+            and xm like concat('%',#{keyWord},'%')
+        </if>
+        <if test="jdrybm!=null and jdrybm!=''">
+            and jdrybm=#{jdrybm}
+        </if>
+        <if test="xm!=null and xm!=''">
+            and xm like concat('%',#{xm},'%')
+        </if>
+        <if test="bmbm!=null and bmbm!=''">
+            and bmbm like concat('',#{bmbm},'%')
+        </if>
+        <if test="sftq!=null and sftq!=''">
+            and sftq=#{sftq}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by ljjdf DESC,sftq ASC
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+    <select id="selectListNew" resultType="java.util.Map">
+        select a.xm,a.szdd,a.ljhgs,a.lxbhgs,b.*,c.name AS kfjb_name,d.name AS state_name from base_addicts a
+        left join diag_behave_extra_grade b on a.jdrybm=b.jdrybm
+        left join ser_dictionary c on a.kfjb=c.code and c.type='kfjb'
+        left join ser_dictionary d on b.state=d.code and d.type='state'
+        where a.jdryzt in('01','02','03','04') and a.type='01' and b.id is not null and DATE_FORMAT(NOW(),'%Y-%m')!=concat(b.year,'-',b.month)
+        <!-- 数据权限控制，大队只能查所属大队信息 -->
+        <if test="bmbmChange!=null and bmbmChange!=''">
+            and a.bmbm like concat('',#{bmbmChange},'%')
+        </if>
+        <if test="xm!=null and xm!=''">
+            and a.xm like concat('%',#{xm},'%')
+        </if>
+        <if test="startYearMonth!=null and startYearMonth!=''">
+            and concat(b.year,'-',b.month) <![CDATA[ >= ]]> #{startYearMonth}
+        </if>
+        <if test="endYearMonth!=null and endYearMonth!=''">
+            and concat(b.year,'-',b.month) <![CDATA[ <= ]]> #{endYearMonth}
+        </if>
+        <if test="jdrybm!=null and jdrybm!=''">
+            and a.jdrybm =#{jdrybm}
+        </if>
+        <if test="keyWord!=null and keyWord!=''">
+            and a.xm like concat('%',#{keyWord},'%')
+        </if>
+        <if test="bmbm!=null and bmbm!=''">
+            and a.bmbm like concat('',#{bmbm},'%')
+        </if>
+        <if test='tabType=="1"'>
+            and b.state=0
+        </if>
+        <if test='tabType=="2"'>
+            and (
+                    (
+                    b.state>=#{stateStart}
+                    and b.state <![CDATA[ <= ]]> #{stateEnd}
+                    )
+                <if test="state!=null and state!=''">
+                    or b.state=#{state}
+                </if>
+            )
+        </if>
+        <if test='tabType=="3"'>
+            and b.state>0 and b.state <![CDATA[ < ]]> 10
+        </if>
+        <if test='tabType=="4"'>
+            and b.state=10
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by b.year DESC,b.month DESC,a.kfjb,b.sum_grade_month DESC
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+    <!--    查询行为汇总数据，提供给 审批/查看使用-->
+    <select id="selectCheckData" resultType="java.util.Map">
+        select a.*,c.ljhgs,c.lxbhgs,c.kfjb
+            from diag_behave_extra_grade a
+	        left join base_addicts c on a.jdrybm=c.jdrybm
+        where a.id=#{id} and c.type='01'
+    </select>
+
+    <!--    查询行为汇总数据，提供给 审批/查看使用-->
+    <select id="selectCheckDataJf" resultType="java.util.Map">
+        select jdrybm,date_format(record_date,'%Y-%m') AS rq,
+            ifnull(sum(check_grade1),0) AS zgsj1,ifnull(sum(check_grade2),0) AS jdkf1,
+            ifnull(sum(check_grade3),0) AS jyjz1,ifnull(sum(check_grade4),0) AS kfld1,ifnull(sum(check_grade5),0) AS tbjj1
+        from diag_behave_daily_grade
+        where jdrybm=#{jdrybm} and date_format(record_date,'%Y-%m')=#{ym}
+        GROUP BY jdrybm,rq
+    </select>
+
+
+    <!--    查询月公示数据-->
+    <select id="selectDayRecordPublic" resultType="java.util.Map">
+        select ba.jdrybm,ba.xm,c.name AS kfjb_name,a.extra_grade,ifnull(sum(b.fs2),0) AS dd_score,ifnull(sum(b1.fs2),0) AS glk_score from base_addicts ba left join
+            diag_behave_extra_grade a on ba.jdrybm=a.jdrybm
+            left join (
+            select jdrybm,date_format(record_date,'%Y-%m') as
+                    rq,grade_type_code,grade_index_code,ifnull(sum(grade_change),0)-
+                    case concat(grade_type_code,grade_index_code)
+                    when '0301' then (ifnull(sum(grade_change),0)*2)
+                    when '0302' then (ifnull(sum(grade_change),0)*2)
+                    when '0303' then (ifnull(sum(grade_change),0)*2)
+                    when '0304' then (ifnull(sum(grade_change),0)*2)
+                    when '0305' then (ifnull(sum(grade_change),0)*2)
+                    when '05' then ifnull(sum(grade_change),0)*2
+                    else 0
+                    end as fs2
+                    from diag_behave_daily_record_temp
+                    where 1=1 and  date_format(record_date,'%Y-%m')=concat(#{year},'-',#{month}) and type=1
+                    group by jdrybm,date_format(record_date,'%Y-%m'),grade_type_code,grade_index_code
+            ) b on concat(a.year,'-',a.month)=b.rq and a.jdrybm=b.jdrybm
+                left join (
+                select jdrybm,date_format(record_date,'%Y-%m') as
+                rq,grade_type_code,grade_index_code,ifnull(sum(grade_change),0)-
+                case concat(grade_type_code,grade_index_code)
+                when '0301' then (ifnull(sum(grade_change),0)*2)
+                when '0302' then (ifnull(sum(grade_change),0)*2)
+                when '0303' then (ifnull(sum(grade_change),0)*2)
+                when '0304' then (ifnull(sum(grade_change),0)*2)
+                when '0305' then (ifnull(sum(grade_change),0)*2)
+                when '05' then ifnull(sum(grade_change),0)*2
+                else 0
+                end as fs2
+                from diag_behave_daily_record_temp
+                where 1=1 and  date_format(record_date,'%Y-%m')=concat(#{year},'-',#{month})  and type=2
+                group by jdrybm,date_format(record_date,'%Y-%m'),grade_type_code,grade_index_code
+            ) b1 on concat(a.year,'-',a.month)=b1.rq and a.jdrybm=b1.jdrybm
+            left join ser_dictionary c on ba.kfjb=c.code and c.type='kfjb'
+            where 1=1 and a.year=#{year} and a.month=#{month} and ba.jdryzt in('01','02','03','04') and ba.type='01'
+            <if test="jdrybm!=null and jdrybm!=''">
+                and ba.jdrybm=#{jdrybm}
+            </if>
+            <if test="bmbm!=null and bmbm!=''">
+                and ba.bmbm=#{bmbm}
+            </if>
+            <if test="kfjb!=null and kfjb!=''">
+                and ba.kfjb=#{kfjb}
+            </if>
+            GROUP BY ba.jdrybm,ba.xm,c.name,a.extra_grade
+    </select>
+
+    <select id="selectJdryXwbx" resultType="java.util.Map">
+        select * from (select a.xm,a.szdd,a.jdrybm,a.qzgljdksrq,a.qzgljdjsrq,a.bmbm,a.rsrq,ifnull(b.ffys,0) ffys,
+        (select count(1) from diag_behave_extra_grade where sfzdwj=1 and jdrybm=a.jdrybm and jdrybm=#{jdrybm}) AS ywlbcf,
+        PERIOD_DIFF(DATE_FORMAT(NOW(),'%Y%m'),DATE_FORMAT(a.qzgljdksrq,'%Y%m')) AS khys,
+        ifnull((select a1.extra_grade_total f from diag_behave_extra_grade a1
+        inner join(select jdrybm,MAX(concat(year,'-',month)) AS ym from diag_behave_extra_grade where state>7 group
+        by jdrybm HAVING jdrybm = #{jdrybm}) b1 on a1.jdrybm=b1.jdrybm and concat(a1.year,'-',a1.month)=b1.ym
+        where a1.jdrybm=a.jdrybm),0) AS ljjdf
+        from base_addicts a left join (
+				select jdrybm,SUM(num) ffys from (
+						select jdrybm,DATE_FORMAT(record_date,'%Y-%m') ym,if(count(1)>0,1,0) num from diag_behave_daily_grade where jdrybm=#{jdrybm} and punish_grade>0 GROUP BY jdrybm,ym
+					) tt GROUP BY jdrybm
+				) b on a.jdrybm=b.jdrybm
+        where a.jdryzt in('01','02','03','04') and a.type='01') tmp
+        where 1=1 and jdrybm=#{jdrybm}
+    </select>
+</mapper>
+

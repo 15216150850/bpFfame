@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseResCollectionMapper">
+
+    <!-- 根据ID查询收藏链接表 -->
+    <select id="selectById" resultType="java.util.Map">
+        select
+        uuid,url,url_name,click_num,is_favourite,inserter,insert_time,updater,update_time
+        from base_res_collection
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <!-- 带参数查询收藏链接表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,url,url_name,click_num,is_favourite,inserter,insert_time,updater,update_time
+        from base_res_collection where url is not null
+        <if test="isFavourite != null and is_favourite !=''">
+            and is_favourite = #{is_favourite}
+        </if>
+        <if test="inserter != null and inserter !=''">
+            and inserter = #{inserter}
+        </if>
+        order by is_favourite desc,click_num desc
+
+    </select>
+    <update id="updateCliceNum">
+        update base_res_collection set click_num =click_num+1 where url=#{url} and inserter = #{inserter}
+    </update>
+
+</mapper>
+

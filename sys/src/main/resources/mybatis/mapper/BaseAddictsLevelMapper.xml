@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseAddictsLevelMapper">
+
+
+    <!-- 添加戒毒人员分级管理记录表 -->
+    <insert id="insertList" useGeneratedKeys="true" keyProperty="uuid">
+        <foreach collection="baseAddictsLevelList" item="baseAddictsLevel" separator=";">
+            insert into base_addicts_level
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="baseAddictsLevel.uuid != null">uuid,</if>
+                <if test="baseAddictsLevel.jdrybm != null">jdrybm,</if>
+                <if test="baseAddictsLevel.beforLevel != null">befor_level,</if>
+                <if test="baseAddictsLevel.afterLevel != null">after_level,</if>
+                <if test="baseAddictsLevel.content != null">content,</if>
+                <if test="baseAddictsLevel.inserter != null">inserter,</if>
+                <if test="baseAddictsLevel.insertTime != null">insert_time,</if>
+                <if test="baseAddictsLevel.updater != null">updater,</if>
+                <if test="baseAddictsLevel.updateTime != null">update_time,</if>
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="baseAddictsLevel.uuid != null">#{baseAddictsLevel.uuid,jdbcType=VARCHAR},</if>
+                <if test="baseAddictsLevel.jdrybm != null">#{baseAddictsLevel.jdrybm,jdbcType=VARCHAR},</if>
+                <if test="baseAddictsLevel.beforLevel != null">#{baseAddictsLevel.beforLevel,jdbcType=VARCHAR},</if>
+                <if test="baseAddictsLevel.afterLevel != null">#{baseAddictsLevel.afterLevel,jdbcType=VARCHAR},</if>
+                <if test="baseAddictsLevel.content != null">#{baseAddictsLevel.content,jdbcType=VARCHAR},</if>
+                <if test="baseAddictsLevel.inserter != null">#{baseAddictsLevel.inserter,jdbcType=INTEGER},</if>
+                <if test="baseAddictsLevel.insertTime != null">#{baseAddictsLevel.insertTime,jdbcType=TIMESTAMP},</if>
+                <if test="baseAddictsLevel.updater != null">#{baseAddictsLevel.updater,jdbcType=INTEGER},</if>
+                <if test="baseAddictsLevel.updateTime != null">#{baseAddictsLevel.updateTime,jdbcType=TIMESTAMP},</if>
+            </trim>
+        </foreach>
+    </insert>
+
+
+    <!-- 修改戒毒人员分级管理记录表 -->
+
+    <!-- 根据ID查询戒毒人员分级管理记录表 -->
+    <select id="selectById" resultType="java.util.Map">
+        select
+        uuid,jdrybm,befor_level,after_level,content,inserter,insert_time,updater,update_time
+        from base_addicts_level
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+
+
+    <!-- 带参数查询戒毒人员分级管理记录表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,jdrybm,befor_level,after_level,content,inserter,insert_time,updater,update_time
+        from base_addicts_level where 1=1
+
+    </select>
+
+
+</mapper>
+

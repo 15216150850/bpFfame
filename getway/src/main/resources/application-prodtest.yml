@@ -1,0 +1,158 @@
+zuul:
+  routes:
+    sys:
+      path: /sys/**
+      serviceId: sys
+      sensitiveHeaders: "*"
+    log:
+      path: /log/**
+      serviceId: log
+      sensitiveHeaders: "*"
+    guard:
+      path: /guard/**
+      serviceId: guard
+      sensitiveHeaders: "*"
+    file:
+      path: /file/**
+      serviceId: file
+      sensitive-headers: "*"
+    act:
+      path: /act/**
+      serviceId: act
+      sensitive-headers: "*"
+    oauth:
+      path: /oauth/**
+      serviceId: oauth
+      sensitive-headers: "*"
+    psy:
+      path: /psy/**
+      serviceId: psy
+      sensitive-headers: "*"
+    edu:
+      path: /edu/**
+      serviceId: edu
+      sensitive-headers: "*"
+    medical:
+      path: /medical/**
+      serviceId: medical
+      sensitive-headers: "*"
+    gov:
+      path: /gov/**
+      serviceId: gov
+      sensitive-headers: "*"
+    work:
+      path: /work/**
+      serviceId: work
+      sensitive-headers: "*"
+    test:
+      path: /test/**
+      serviceId: test
+      sensitive-headers: "*"
+    rt:
+      path: /rt/**
+      serviceId: rt
+      sensitive-headers: "*"
+    hr:
+      path: /hr/**
+      serviceId: hr
+      sensitive-headers: "*"
+    lh:
+      path: /lh/**
+      serviceId: lh
+      sensitive-headers: "*"
+    ec:
+      path: /ec/**
+      serviceId: ec
+      sensitive-headers: "*"
+    ifs:
+      path: /ifs/**
+      serviceId: ifs
+      sensitive-headers: "*"
+    other-source:
+      path: /other-source/**
+      serviceId: other-source
+      sensitive-headers: "*"
+    wlgk:
+      path: /wlgk/**
+      serviceId: wlgk
+      sensitive-headers: "*"
+    sixsys:
+      path: /sixsys/**
+      serviceId: sixsys
+      sensitive-headers: "*"
+    TransactionManager:
+      path: /TransactionManager/**
+      serviceId: TransactionManager
+      sensitive-headers: "*"
+    msg:
+      path: /msg/**
+      serviceId: msg
+      sensitive-headers: "*"
+  add-proxy-headers: false
+  retryable: true
+  semaphore:
+    max-semaphores: 5000
+  ribbonIsolationStrategy: THREAD
+  ignored-services: "*"
+  host:
+    max-per-route-connections: 200
+    max-total-connections: 500
+    socket-timeout-millis: 5000
+    connect-timeout-millis: 10000
+hystrix:
+  threadpool:
+    default:
+      coreSize: 20
+      maximumSize: 50
+      maxQueueSize: -1
+      allowMaximumSizeToDivergeFromCoreSize: true
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false
+        isolation:
+          thread:
+            timeoutInMilliseconds: 120000
+ribbon:
+  ReadTimeout: 60000
+  ConnectTimeout: 60000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 0
+  OkToRetryOnAllOperations: false
+spring:
+  rabbitmq:
+    host: 30.129.3.25
+    port: 5672
+    username: admin
+    password: Bp12345
+    virtual-host: root
+  application:
+    name: zuul
+  session:
+    store-type: redis
+  redis:
+    host: 30.129.3.25
+    port: 6379
+  servlet:
+    multipart:
+      file-size-threshold: 0
+      max-file-size: 50Mb
+      max-request-size: 300Mb
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://30.129.3.20/wisdom_prison_sys?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    username: root
+    password: Bp12345
+logging:
+  file: c:/log/gateway.log
+server:
+  port: 80
+eureka:
+  client:
+    service-url:
+      defaultZone: http://30.129.3.25:8010/eureka/
+  instance:
+    instance-id: gateway
+    #    ${spring.application.name}:${random.value}
+    prefer-ip-address: true

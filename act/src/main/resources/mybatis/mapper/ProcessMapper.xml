@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.act.mapper.ProcessMapper">
+
+
+    <insert id="insertActKeyUrl">
+        INSERT into act_key_url(`key`,base_url) values (#{key},#{baseUrl})
+    </insert>
+    <select id="selectKeyUrlByKey" resultType="com.bp.act.entity.ActKeyUrl">
+        SELECT * FROM act_key_url WHERE `key`=#{key}
+    </select>
+
+    <insert id="insertIsDefined">
+        INSERT INTO act_is_defined(key_, is_defined, is_delopy)
+        VALUES (#{key}, #{isDefined}, #{isDelopy})
+    </insert>
+    <update id="updateIsDefinedByKey">
+        UPDATE act_is_defined
+        SET is_delopy =#{isDelopy}
+        WHERE key_ = #{key}
+    </update>
+    <update id="updateActKeyUrl">
+        UPDATE act_key_url set `key`=#{key},base_url=#{baseUrl} where id=#{id}
+    </update>
+    <delete id="deleteIsDefinedByKey">
+        DELETE
+        FROM act_is_defined
+        WHERE key_ = #{key}
+    </delete>
+
+
+    <select id="selectListDefinedProdefList" resultType="java.util.Map">
+        SELECT
+        a.ID_ AS id,
+        a.REV_ AS rev,
+        a.CATEGORY_,
+        a.NAME_ AS `name`,
+        a.KEY_ AS `key`,
+        a.VERSION_ AS version,
+        a.DEPLOYMENT_ID_ AS deployment_id,
+        a.RESOURCE_NAME_ AS xml,
+        a.DGRM_RESOURCE_NAME_ AS png,
+        a.DESCRIPTION_,
+        a.HAS_START_FORM_KEY_,
+        a.SUSPENSION_STATE_,
+        a.TENANT_ID_,
+        c.LAST_UPDATE_TIME_ AS times
+        FROM
+        act_re_procdef a
+        LEFT JOIN act_re_model c
+        ON a.KEY_ = c.KEY_
+        RIGHT JOIN
+        (SELECT
+        key_,
+        MAX(VERSION_) vv
+        FROM
+        act_re_procdef
+        GROUP BY key_) b
+        ON a.key_ = b.key_
+        AND a.version_ = b.vv
+        LEFT JOIN act_is_defined d
+        ON d.key_ = a.KEY_
+        where 1=1
+        <if test="keyWord != null and keyWord != ''">
+            and a.NAME_ like concat('%',#{keyWord},'%')
+        </if>
+        <if test="page !=null  and limit !=null ">
+            limit ${page},${limit}
+        </if>
+    </select>
+    <select id="selectListProefCount" resultType="java.lang.Long">
+        SELECT count(1)
+        FROM act_re_procdef a
+        LEFT JOIN act_re_model c ON a.KEY_ = c.KEY_
+        RIGHT JOIN (SELECT
+        key_,
+        MAX(VERSION_) vv
+        FROM act_re_procdef
+        GROUP BY key_) b
+        ON a.key_ = b.key_
+        AND a.version_ = b.vv
+
+    </select>
+    <select id="selectListDefinedProdefListCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM (
+        SELECT
+        a.ID_ AS id,
+        a.REV_ AS rev,
+        a.CATEGORY_,
+        a.NAME_ AS `name`,
+        a.KEY_ AS `key`,
+        a.VERSION_ AS version,
+        a.DEPLOYMENT_ID_ AS deployment_id,
+        a.RESOURCE_NAME_ AS xml,
+        a.DGRM_RESOURCE_NAME_ AS png,
+        a.DESCRIPTION_,
+        a.HAS_START_FORM_KEY_,
+        a.SUSPENSION_STATE_,
+        a.TENANT_ID_,
+        c.LAST_UPDATE_TIME_ AS times
+        FROM
+        act_re_procdef a
+        LEFT JOIN act_re_model c
+        ON a.KEY_ = c.KEY_
+        RIGHT JOIN
+        (SELECT
+        key_,
+        MAX(VERSION_) vv
+        FROM
+        act_re_procdef
+        GROUP BY key_) b
+        ON a.key_ = b.key_
+        AND a.version_ = b.vv
+        LEFT JOIN act_is_defined d
+        ON d.key_ = a.KEY_
+        where 1=1
+        <if test="keyWord != null and keyWord != ''">
+            and a.NAME_ like concat('%',#{keyWord},'%')
+        </if>
+        ) t
+    </select>
+    <select id="findProCessByKey" resultType="com.bp.act.entity.process.ActUserTask">
+        SELECT * FROM act_user_task where proc_def_key=#{key}
+    </select>
+</mapper>
+

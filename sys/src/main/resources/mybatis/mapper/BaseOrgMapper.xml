@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseOrgMapper">
+
+    <!-- 带参数查询戒毒机构表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,jdjgbm,jdjgmc,qtmcjgpz,xzdq,sllx,xxdz,jzjb,jldtzbqk,jlqtzzqk,xsdwqk,lxdh,czhm,yzbm,dzyx,lscj,fzr,dzwcy,ldbz,clrq,jdjgzt,szlx,cxrq,cxyy,jdsjj,jdssjsznl,jdssysznl,qzqzgljdsznl,qzkfjdsznl,qzqxjysznl,qzqtsznl,syszbcjdrynl,jdssycws,csgm,lrysjb,sfazbryzgs,sfslzzaqscjgbm,jdjgzzbm,lxdz,c.name
+        as sllxmc,
+        a.name as jzjbmc
+        from base_org bo
+        left join ser_dictionary c on bo.sllx=c.code and c.type='sllx'
+        left join ser_dictionary a on bo.jzjb=a.code and a.type='jzjb'
+        where 1=1
+        <if test="keyWord != '' and keyWord != null">
+            and jdjgmc like concat('%',#{keyWord},'%')
+        </if>
+        <if test="sllx !=null  and sllx !='' ">
+            and sllx =#{sllx}
+        </if>
+
+        <if test="jzjb !=null  and jzjb !='' ">
+            and jzjb =#{jzjb}
+        </if>
+
+    </select>
+    <select id="selectJdjgInfo" resultType="com.bp.sys.po.BaseOrg">
+        SELECT *
+        FROM base_org limit 0,1
+
+    </select>
+    <select id="findByJdjgbm" resultType="com.bp.sys.po.BaseOrg">
+
+        SELECT * FROM base_org WHERE jdjgbm=#{jdjgbm}
+    </select>
+</mapper>
+

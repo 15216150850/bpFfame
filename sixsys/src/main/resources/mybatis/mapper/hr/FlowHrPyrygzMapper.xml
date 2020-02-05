@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.hr.FlowHrPyrygzMapper">
+
+    <!-- 带参数查询聘用人员工作列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,fp.inserter,fp.insert_time,fp.updater,fp.update_time,act_title,fp.pid,fp.remark,doc_state,flow_sn,t5.name flow_state,xgwj,yjsm,qdclzqqwz,qdygswggzr,sqr,sqrbm,tips,zzchysj,zzchyjdnr,ldxzhysj,ldxzhyjdnr,sqsy,zpgw,zprs,zpryjqgzdy,zpgg,pysx,qdryjgzdy,qdygssggzr
+        from flow_hr_pyrygz fp
+        LEFT JOIN t_dictionary t5 ON fp.flow_state = t5.code AND t5.type = 'flowState'
+        where 1=1
+        <if test="flowState != null and flowState!=''">
+            AND( fp.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fp.flow_state=6 or fp.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fp.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fp.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="zpgw == null and zpgw ==''">
+            zpgw like concat('%',#{zpgw},'%'))
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fp.insert_time,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fp.insert_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time DESC
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+
+</mapper>
+

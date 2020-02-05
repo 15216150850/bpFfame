@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseAddictsRelationMapper">
+
+
+    <delete id="deleteByBaseAddictsUuid">
+        delete from base_addicts_relation where base_addicts_uuid=#{baseAddictsUuid,jdbcType=VARCHAR}
+    </delete>
+
+    <!-- 批量删除戒毒人员家庭社会关系表 -->
+    <delete id="deleteByBaseAddictsUuids" parameterType="java.lang.String">
+        delete from base_addicts_relation where base_addicts_uuid in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <!-- 根据ID查询戒毒人员家庭社会关系表 -->
+    <select id="selectById" resultType="java.util.Map">
+        select
+        uuid,base_addicts_uuid,name,gx,lxdh,xzzz,bz,inserter,insert_time,updater,update_time
+        from base_addicts_relation
+        where uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <!-- 带参数查询戒毒人员家庭社会关系表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,base_addicts_uuid,name,gx,lxdh,xzzz,bz,inserter,insert_time,updater,update_time
+        from base_addicts_relation where 1=1
+
+    </select>
+
+    <!-- 带参数查询戒毒人员家庭社会关系表列表 -->
+
+    <!--查询戒毒人员亲属社会关系-->
+    <select id="selectByBaseAddictsUuid" resultType="com.bp.sys.po.BaseAddictsRelation">
+        select
+        uuid,base_addicts_uuid,name,gx,lxdh,xzzz,bz,inserter,insert_time,updater,update_time
+        from base_addicts_relation
+        where base_addicts_uuid = #{baseAddictsUuid,jdbcType=VARCHAR}
+    </select>
+
+
+</mapper>
+

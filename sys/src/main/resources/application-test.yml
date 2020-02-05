@@ -1,0 +1,65 @@
+server:
+  port: 0
+  tomcat:
+    max-http-header-size: 10000000
+    max-http-post-size: 10000000
+spring:
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: admin
+    password: 123456
+    virtual-host: root
+  redis:
+    database: 1
+    host: 127.0.0.1
+    port: 6379
+    password:
+  datasource:
+    url: jdbc:mysql://192.168.1.7:3306/smart_prison_sys_online?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+  jackson:
+    default-property-inclusion: NON_NULL
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      fail-on-empty-beans: false
+  application:
+    name: sys
+security:
+  oauth2:
+    resource:
+      user-info-uri: http://192.168.1.7:9527/oauth/user-me
+      prefer-token-info: false
+eureka:
+  client:
+    service-url:
+      defaultZone: http://192.168.1.7:8010/eureka/
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}
+    #    ${spring.application.name}:${random.value}
+    prefer-ip-address: true
+mybatis-plus:
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  config-location: classpath:mybatis/mybatis-config.xml
+#  configuration:
+#    map-underscore-to-camel-case: true
+logging:
+  level:
+    com.bp.sys.*: debug
+  file: c:/log/sys.log
+tx-lcn:
+  client:
+    manager-address: 127.0.0.1:8070
+  ribbon:
+    loadbalancer:
+      dtx:
+        enabled: false
+ribbon:
+  ReadTimeout: 6000
+  ConnectTimeout: 6000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 0
+  OkToRetryOnAllOperations: false

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseStepSecondMapper">
+
+    <!-- 带参数查询教育适应区阶段性诊断评估信息表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select t1.*,t2.bmmc from (
+        select a.*,b.xm,b.xb,b.fqqk,b.sfwzdry from base_step_second a left join (
+        select * from base_addicts where jdryzt in('01','02','03','04')
+        <if test="isHistory != null and isHistory !=''">
+            or (jdryzt ='11' and qzgljdjsrq > '2019-09-01')
+        </if>
+        ) b on a.jdrybm = b.jdrybm where 1=1
+        <if test="isHistory == null or isHistory ==''">
+            and b.fqqk='02'
+        </if>
+        <if test="status !=null and status!=''">
+            <if test="isHistory != null and isHistory !=''">
+                and a.status = 0 <!--如果是查询历史记录则查询无效状态的记录-->
+            </if>
+            <if test="isHistory == null or isHistory ==''">
+                and a.status = #{status} <!--如果不是查询历史记录则查询有效状态的记录-->
+            </if>
+        </if>
+        <if test="jdrybm !=null and jdrybm!=''">
+            and a.jdrybm = #{jdrybm}
+        </if>
+        ) t1
+        left join base_department t2 on t1.bmbm = t2.bmbm
+        where 1=1
+        <if test="xm !=null and xm!=''">
+            and t1.xm LIKE concat('%',#{xm},'%')
+        </if>
+        <if test="bmmc !=null and bmmc!=''">
+            and t2.bmmc LIKE concat('%',#{bmmc},'%')
+        </if>
+        <if test="flowState !=null and flowState!=''">
+            and t1.flow_state = #{flowState}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and t1.pgsj &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and t1.pgsj &lt;= #{endTime}
+        </if>
+        <if test="keyWord !=null and keyWord!=''">
+            and (t1. xm LIKE concat('%',#{keyWord},'%') or t1.jdrybm LIKE concat('%',#{keyWord},'%'))
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by ifnull(flow_state,'0.1') asc,insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <!--根据戒毒人员编码获取教育适应区诊断评估记录-->
+    <select id="selectEntityByJdrybm" resultType="com.bp.sys.po.BaseStepSecond">
+        select * from base_step_second
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        <if test="status != null and status != ''">
+            and status = #{status,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <!--修改戒毒人员教育适应区评估记录状态为无效-->
+    <update id="updateStateByJdrybm">
+        UPDATE base_step_second SET status='0' WHERE jdrybm=#{jdrybm}
+    </update>
+
+    <!-- 根据戒毒人员编码查询教育适应区（A2+H1+E1）的的详情 Dto -->
+    <select id="evaluationByJdrybm" resultType="java.util.Map">
+        select kfxlkhjg,jdylkhjg,jyjzkhjg from base_step_second
+        where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        and status = 1
+        order by insert_time desc
+        limit 1
+    </select>
+
+    <!--获取戒毒人员最新M2的记录-->
+    <select id="getNewScore" resultType="com.bp.sys.po.BaseStepSecond">
+        select * from base_step_second where jdrybm = #{jdrybm,jdbcType=VARCHAR}
+        order by insert_time desc limit 1
+    </select>
+</mapper>
+

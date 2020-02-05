@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.WxxsjfxMapper">
+
+    <!-- 带参数查询戒治效能数据分析列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        j.uuid,ba.jdrybm, j.dadf, j.zdbhdf, j.xlqxdf, j.smtzdf, j.kfxldf, j.xwbxdf, j.zf,
+        ba.xm, ba.rsrq, ba.szdd
+        from base_addicts ba left join wxxsjfx j on ba.jdrybm = j.jdrybm
+        where ba.jdryzt in ('01','02','03','04')
+        <if test="keyWord != null and keyWord != ''">
+            and (ba.xm like concat('%',#{keyWord},'%') or ba.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by j.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <select id="selectByJdrybm" parameterType="java.lang.String" resultType="com.bp.sys.po.Wxxsjfx">
+        select j.* from wxxsjfx j where j.jdrybm = #{jdrybm}
+    </select>
+
+    <select id="selectAvg" parameterType="java.lang.String" resultType="java.lang.Float">
+        select TRUNCATE(AVG(j.zf),2) from wxxsjfx j where DATE_FORMAT(j.insert_time,'%Y-%m') =
+        DATE_FORMAT(now(),'%Y-%m')
+    </select>
+
+    <!-- 大数据-戒治效能-查询人员列表 -->
+    <select id="selectPersonList" resultType="java.util.Map" parameterType="java.util.Map">
+        select t1.jdrybm, t1.xm, t1.szdd, j.zf,
+        sum(j.da_tfwjzzdf + j.zdbh_tfwjzzdf + j.xlqx_tfwjzzdf + j.smtz_tfwjzzdf + j.kfxl_tfwjzzdf + j.xwbx_tfwjzzdf) as
+        tfwjzz_total,
+        sum(j.da_zsdf + j.zdbh_zsdf + j.xlqx_zsdf + j.smtz_zsdf + j.kfxl_zsdf + j.xwbx_zsdf) as zs_total,
+        sum(j.da_zsgdf + j.zdbh_zsgdf + j.xlqx_zsgdf + j.smtz_zsgdf + j.kfxl_zsgdf + j.xwbx_zsgdf) as zsg_total,
+        sum(j.da_zcdf + j.zdbh_zcdf + j.xlqx_zcdf + j.smtz_zcdf + j.kfxl_zcdf + j.xwbx_zcdf) as zc_total,
+        sum(j.da_ttdf + j.zdbh_ttdf + j.xlqx_ttdf + j.smtz_ttdf + j.kfxl_ttdf + j.xwbx_ttdf) as tt_total
+        from (
+        select t1.* from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1 and t1.jdryzt in ('01','02','03','04')
+        <if test="keyWord != null and keyWord != ''">
+            and (t1.xm like concat('%',#{keyWord},'%') or t1.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+            <!--档案补录追加条件，只有在生理脱毒，教育适应区可补录-->
+            <if test="flag!=null and flag!=''">
+                and (t1.fqqk='01' or t1.fqqk='02')
+            </if>
+        </if>
+        group by t1.jdrybm
+        order by DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) DESC
+        <if test="page !=null  or limit !=null ">
+            limit ${page},${limit}
+        </if>
+        ) t1 left join wxxsjfx j on t1.jdrybm = j.jdrybm
+        group by j.jdrybm
+    </select>
+
+    <!-- 大数据-戒治效能-查询人员列表 -->
+    <select id="selectPersonListCount" resultType="java.lang.Long" parameterType="java.util.Map">
+        select count(1) from (
+        select t1.* from base_addicts t1
+        LEFT JOIN base_org t5 on t1.jdjgbm = t5.jdjgbm
+        where 1=1 and t1.jdryzt in ('01','02','03','04')
+        <if test="keyWord != null and keyWord != ''">
+            and (t1.xm like concat('%',#{keyWord},'%') or t1.jdrybm like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and t1.bmbm like concat('',#{bmbm},'%')
+            <!--档案补录追加条件，只有在生理脱毒，教育适应区可补录-->
+            <if test="flag!=null and flag!=''">
+                and (t1.fqqk='01' or t1.fqqk='02')
+            </if>
+        </if>
+        group by t1.jdrybm
+        order by DATEDIFF(qzgljdjsrq,NOW())-IFNULL(ysdqjts,0) DESC
+        ) t1 left join wxxsjfx j on t1.jdrybm = j.jdrybm
+    </select>
+</mapper>
+

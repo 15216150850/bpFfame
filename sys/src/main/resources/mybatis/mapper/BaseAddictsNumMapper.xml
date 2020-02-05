@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseAddictsNumMapper">
+	
+	<!-- 带参数查询戒毒人员人数设置列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+			*
+		from base_addicts_num where 1=1
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+    <select id="selectLastData" resultType="com.bp.sys.po.BaseAddictsNum">
+        select * from base_addicts_num order by insert_time DESC limit 0,1
+    </select>
+    <!--    查询最新的在所人数，真实统计-->
+    <select id="selectLastDataTrue" resultType="java.util.Map">
+        select
+        (select count(1) from base_addicts where type='01' and jdryzt in('01','02','03','04')) AS zcjdry,
+        (select count(1) from base_addicts where type='01' and jdryzt ='01') AS zsjdry,
+        (select count(1) from base_addicts where type='01' and jdryzt ='04') AS swjy,
+        (select count(1) from base_addicts where type='01' and jdryzt ='03') AS wcts,
+        (select count(1) from base_addicts where type='01' and date_format(rsrq,'%Y-%m')=date_format(NOW(),'%Y-%m')) AS byxs,
+        (select count(1) from gov_csxx where date_format(cssj,'%Y-%m-%d')=date_format(NOW(),'%Y-%m-%d')) AS jrcs,
+        (select count(1) from (
+        select a1.* from gov_bhxyscs_info a1 inner join (select jdrybm,MAX(insert_time) AS insert_time from gov_bhxyscs_info where cslx=0 GROUP BY jdrybm) b1 on a1.jdrybm=b1.jdrybm and a1.insert_time=b1.insert_time
+        where a1.flow_state=2
+        ) tt
+        where jdrybm not in(
+        select a1.jdrybm from gov_bhxyscs_info a1 inner join (select jdrybm,MAX(insert_time) AS insert_time from gov_bhxyscs_info where cslx=1 GROUP BY jdrybm) b1 on a1.jdrybm=b1.jdrybm and a1.insert_time=b1.insert_time
+        where a1.flow_state=2
+        )) AS bhxys,
+        (select count(1) from base_addicts where type='01' and jdryzt in('01','02','03','04') and sfwzdry='1') AS zdry,
+        (select count(1) from (
+        select a1.* from gov_ddgl_info a1 inner join (select jdrybm,MAX(insert_time) AS insert_time from gov_ddgl_info where state=1 and flow_state=1 GROUP BY jdrybm) b1 on a1.jdrybm=b1.jdrybm and a1.insert_time=b1.insert_time
+        ) tt
+        where jdrybm not in(
+        select a1.jdrybm from gov_ddgl_info a1 inner join (select jdrybm,MAX(insert_time) AS insert_time from gov_ddgl_info where state=2 and flow_state=2 GROUP BY jdrybm) b1 on a1.jdrybm=b1.jdrybm and a1.insert_time=b1.insert_time
+        )) AS ddgl,
+        (select count(1) from base_addicts where type='01' and jdryzt ='02') AS jzzy
+    </select>
+
+</mapper>
+

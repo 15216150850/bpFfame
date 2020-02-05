@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.hr.FlowHrBzjlgzMapper">
+
+    <!-- 带参数查询表彰奖励工作列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        fhb.uuid, fhb.inserter, fhb.insert_time, fhb.updater, fhb.update_time,
+        fhb.act_title, fhb.pid, fhb.remark, fhb.doc_state, fhb.flow_sn, fhb.flow_state,
+        fhb.xgwj, fhb.yjsm, fhb.qdclzqqwz, fhb.qdygswggzr, fhb.sqr, fhb.sqrbm,
+        fhb.tips, fhb.zzchysj, fhb.zzchyjdnr, fhb.ldxzhysj, fhb.ldxzhyjdnr, b.name as flow_state_name
+        from flow_hr_bzjlgz fhb left join t_dictionary b on fhb.flow_state = b.code and b.type = 'flowState' where 1=1
+        <if test="flowState != null and flowState!=''">
+            AND( fhb.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fhb.flow_state=6 or fhb.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fhb.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fhb.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (fhb.act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fhb.insert_time,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fhb.insert_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by fhb.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+</mapper>
+

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.buy.FlowBuyCgsqMapper">
+
+    <!-- 带参数查询采购申请列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        fc.uuid,fc.inserter,fc.insert_time,fc.updater,fc.update_time,act_title,fc.pid,fc.remark,doc_state,flow_sn,flow_state,xgwj,sqsy,yjje,cgyy,gxmzjly,ysqk,sfzfcg,cgzzxs,t2.name
+        cgssjg,t3.name
+        cgfs,xdfgld,qtr,cgldxzhypdjg,sjdjpfyj,sfscsb,tips,sqrssbm,wzmxjys,cggkbm,cggkbmfzr,xdfg,kcxzcy,cgbgsyj,kcsj,kcdd,kcqk,kcxzyj,ysrq,ysdwbm,gysmc,ysry,yswzmxjje,sqr,sqrbm,cgldxzhycgd,bdcssj,cgldxzhypdcgd,dwhcgd,wzmc,je,hycgd,sqrbmbm,t1.name
+        wzlb,t5.name as flowStateName,cggkbmbm,cggkbmfzrbm,CONCAT(date_format(fc.insert_time ,'%Y-%m-%d' ),"至",date_format(fc.update_time ,'%Y-%m-%d' )) cgsj,cjje,sfzzfcgmln,t6.bmmc bmmc
+        from flow_buy_cgsq fc
+        LEFT JOIN ser_dictionary t1 ON fc.wzlb = t1.code AND t1.type = 'wzlb'
+        LEFT JOIN ser_dictionary t2 ON fc.cgssjg = t2.code AND t2.type = 'cgssjg'
+        LEFT JOIN ser_dictionary t3 ON fc.cgfs = t3.code AND t3.type = 'cgfs'
+        LEFT JOIN t_dictionary t5 ON fc.flow_state = t5.code AND t5.type = 'flowState'
+        LEFT JOIN base_department t6 ON fc.cggkbmbm = t6.bmbm
+        where 1=1
+        <if test="flowState != null and flowState!=''">
+            AND( fc.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fc.flow_state=6 or fc.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fc.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fc.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="cgfs != null and cgfs!=''">
+            and cgfs=#{cgfs}
+        </if>
+        <if test="sfzfcg != null and sfzfcg != ''">
+            and sfzfcg=#{sfzfcg}
+        </if>
+        <if test="sfzzfcgmln != null and sfzzfcgmln != ''">
+            and sfzzfcgmln=#{sfzzfcgmln}
+        </if>
+        <if test="wzlb != null and wzlb != ''">
+            and wzlb=#{wzlb}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and sqrbmbm like concat('%',#{bmbm},'%')
+        </if>
+        <!--state为1、2、3、4、5、6分别代表不用价格0到2000、2000到5000、50000到2万、2万到20万、20万以上、其它采购申请（金额为0）-->
+        <if test="state != null and state !=''">
+            <choose>
+                <when test="state==1">
+                    and yjje <![CDATA[ > ]]> 0 and yjje <![CDATA[ < ]]> 2000
+                </when>
+                <when test="state==2">
+                    and yjje <![CDATA[ >= ]]> 2000 and yjje <![CDATA[ < ]]> 5000
+                </when>
+                <when test="state==3">
+                    and yjje <![CDATA[ >= ]]> 5000 and yjje <![CDATA[ < ]]> 20000
+                </when>
+                <when test="state==4">
+                    and yjje <![CDATA[ >= ]]> 20000 and yjje <![CDATA[ < ]]> 200000
+                </when>
+                <when test="state==5">
+                    and yjje <![CDATA[ >= ]]> 200000
+                </when>
+                <when test="state==6">
+                    and yjje = 0
+                </when>
+            </choose>
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fc.insert_time,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fc.insert_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <!-- 带参数查询物资采购表导出列表 -->
+    <select id="selectListExport" resultType="com.bp.sixsys.po.buy.FlowBuyCgsq">
+        select
+        fc.uuid,fc.inserter,fc.insert_time,fc.updater,fc.update_time,act_title,fc.pid,fc.remark,doc_state,flow_sn,flow_state,xgwj,sqsy,yjje,cgyy,gxmzjly,ysqk,sfzfcg,cgzzxs,t2.name
+        cgssjg,t3.name
+        cgfs,xdfgld,qtr,cgldxzhypdjg,sjdjpfyj,sfscsb,tips,sqrssbm,wzmxjys,cggkbm,cggkbmfzr,xdfg,kcxzcy,cgbgsyj,kcsj,kcdd,kcqk,kcxzyj,ysrq,ysdwbm,gysmc,ysry,yswzmxjje,sqr,sqrbm,cgldxzhycgd,bdcssj,cgldxzhypdcgd,dwhcgd,wzmc,je,hycgd,sqrbmbm,t1.name
+        wzlb,t5.name as flowStateName,cggkbmbm,cggkbmfzrbm,CONCAT(date_format(fc.insert_time ,'%Y-%m-%d' ),"至",date_format(fc.update_time ,'%Y-%m-%d' )) cgsj,cjje,sfzzfcgmln,t6.bmmc bmmc
+        from flow_buy_cgsq fc
+        LEFT JOIN ser_dictionary t1 ON fc.wzlb = t1.code AND t1.type = 'wzlb'
+        LEFT JOIN ser_dictionary t2 ON fc.cgssjg = t2.code AND t2.type = 'cgssjg'
+        LEFT JOIN ser_dictionary t3 ON fc.cgfs = t3.code AND t3.type = 'cgfs'
+        LEFT JOIN t_dictionary t5 ON fc.flow_state = t5.code AND t5.type = 'flowState'
+        LEFT JOIN base_department t6 ON fc.cggkbmbm = t6.bmbm
+        where 1=1
+        <if test="flowState != null and flowState!=''">
+            AND( fc.flow_state=#{flowState}
+            <if test="flowState==2">
+                or fc.flow_state=6 or fc.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or fc.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or fc.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="cgfs != null and cgfs!=''">
+            and cgfs=#{cgfs}
+        </if>
+        <if test="sfzfcg != null and sfzfcg != ''">
+            and sfzfcg=#{sfzfcg}
+        </if>
+        <if test="sfzzfcgmln != null and sfzzfcgmln != ''">
+            and sfzzfcgmln=#{sfzzfcgmln}
+        </if>
+        <if test="wzlb != null and wzlb != ''">
+            and wzlb=#{wzlb}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and sqrbmbm like concat('%',#{bmbm},'%')
+        </if>
+        <!--state为1、2、3、4、5、6分别代表不用价格0到2000、2000到5000、50000到2万、2万到20万、20万以上、其它采购申请（金额为0）-->
+        <if test="state != null and state !=''">
+            <choose>
+                <when test="state==1">
+                    and yjje <![CDATA[ > ]]> 0 and yjje <![CDATA[ < ]]> 2000
+                </when>
+                <when test="state==2">
+                    and yjje <![CDATA[ >= ]]> 2000 and yjje <![CDATA[ < ]]> 5000
+                </when>
+                <when test="state==3">
+                    and yjje <![CDATA[ >= ]]> 5000 and yjje <![CDATA[ < ]]> 20000
+                </when>
+                <when test="state==4">
+                    and yjje <![CDATA[ >= ]]> 20000 and yjje <![CDATA[ < ]]> 200000
+                </when>
+                <when test="state==5">
+                    and yjje <![CDATA[ >= ]]> 200000
+                </when>
+                <when test="state==6">
+                    and yjje = 0
+                </when>
+            </choose>
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fc.insert_time,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fc.insert_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+    </select>
+
+    <!--汇总表-->
+    <select id="totalList" resultType="java.util.Map">
+        select
+        fc.cgfs,
+        t3.name cgfsmc,
+        count(fc.cgfs) count,
+        sum(fc.cjje) zje
+        from flow_buy_cgsq fc
+        LEFT JOIN ser_dictionary t3 ON fc.cgfs = t3.code AND t3.type = 'cgfs'
+        where 1=1
+        AND( fc.flow_state=2 )
+        <if test="sfzzfcgmln != null and sfzzfcgmln != ''">
+            and fc.sfzzfcgmln=#{sfzzfcgmln}
+        </if>
+        <if test="wzlb != null and wzlb != ''">
+            and fc.wzlb=#{wzlb}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and fc.sqrbmbm like concat('%',#{bmbm},'%')
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and (fc.act_title like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and DATE_FORMAT(fc.insert_time,'%Y-%m-%d') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and DATE_FORMAT(fc.insert_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        group by fc.cgfs
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by fc.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+</mapper>
+

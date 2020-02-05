@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.DictionaryMapper">
+
+    <!-- 带参数查询字典表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select id,type,pid,code,name,remark,sort_no from t_dictionary where type=#{type} and pid=#{pid}
+        <if test="code!=''">
+            and code like concat('%',#{code},'%')
+        </if>
+        <if test="name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        order by sort_no asc
+    </select>
+
+    <!-- 检测字典代号 -->
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(id) from t_dictionary where code=#{code} and type=#{type}
+        <if test="id!=null">
+            and id != #{id}
+        </if>
+    </select>
+
+    <!-- 查询子集 -->
+    <select id="selectChildList" resultType="java.util.Map">
+        select id, type, pid, code, name, remark, sort_no from t_dictionary where pid=#{id} order by sort_no asc
+    </select>
+
+    <!-- 根据类别删除 -->
+    <delete id="deleteByType">
+        delete from t_dictionary where type=#{type}
+    </delete>
+
+    <!-- 批量删除 -->
+    <delete id="deleteByTypes">
+        delete from t_dictionary where FIND_IN_SET(type,#{types})>0
+    </delete>
+
+    <!-- 查询字典 -->
+    <select id="selectDicByPidAndType" resultType="com.bp.sys.po.Dictionary">
+        select id, type, pid, code, name, remark, sort_no from t_dictionary where pid=#{pid} and type=#{type} order by
+        sort_no asc
+    </select>
+
+</mapper>
+

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.eco.EcoQygdzcswdbMapper">
+
+    <!-- 带参数查询经济权力-企业固定资产所外调拨列表 -->
+    <select id="selectList" resultType="java.util.Map">
+		select a.*,c.name as flowStateName, b.bmmc from flow_eco_qygdzcswdb a
+		left join base_department b on a.sydw = b.bmbm
+		left join t_dictionary c on a.flow_state = c.code and c.type = 'flowState'
+
+		<where>
+			<if test="keyWord != null and keyWord != ''">
+				and zcmc like concat('%',#{keyWord},'%')
+			</if>
+			<if test="sydw != null and sydw != ''">
+				and (sydw = #{sydw} or sydw in (select bmbm from base_department where sjbmbm = #{sydw}))
+			</if>
+			<if test="zcmc != null and zcmc != ''">
+				and zcmc like concat('%',#{zcmc},'%')
+			</if>
+			<if test="sqr != null and sqr != ''">
+				and sqr like concat('%',#{sqr},'%')
+			</if>
+			<if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+				and a.inserter = #{currentUserId}
+			</if>
+			<if test="flowState != null and flowState != ''">
+				and flow_state = #{flowState}
+			</if>
+			<if test="docState != null and docState != ''">
+				and doc_state = #{docState}
+			</if>
+		</where>
+		<if test="field == null or field == ''">
+			order by insert_time desc
+		</if>
+		<if test="field != null and field != ''">
+			order by `${field}` ${order}, insert_time desc
+		</if>
+	</select>
+
+</mapper>
+

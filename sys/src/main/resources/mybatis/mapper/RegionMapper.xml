@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.RegionMapper">
+
+
+    <select id="selectById" resultType="java.util.Map">
+        select s1.*,s2.name pname from
+        (select id,code,name,type,pid from t_region where id=#{id})s1 left JOIN
+        (select id,name from t_region)s2 on s1.pid = s2.id
+    </select>
+
+
+    <select id="selectList" resultType="java.util.Map">
+        select s1.*,s2.name typeName from
+        (select id,code,name,type,pid,region_hasChild(id) hasChild from t_region where 1=1 and pid=#{pid})s1 left JOIN
+        (select code,name from t_dictionary where type='region_type')s2 on s1.type=s2.code
+    </select>
+
+    <!-- 检测区域编码 -->
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(id) from t_region where code = #{code}
+        <if test=" id!=null and id !=''">
+            and id!=#{id}
+        </if>
+    </select>
+
+    <!-- 查询子集 -->
+    <select id="selectChildList" resultType="java.util.Map">
+        select id from t_region where pid=#{id}
+    </select>
+
+
+    <select id="selectListByPid" resultType="java.util.Map">
+        select s1.*,s2.name typeName from
+        (select id,code,name,type,pid,region_hasChild(id) hasChild from t_region where 1=1 and pid=#{pid})s1 left JOIN
+        (select code,name from t_dictionary where type='region_type')s2 on s1.type=s2.code
+    </select>
+</mapper>
+

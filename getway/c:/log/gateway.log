@@ -1,0 +1,2 @@
+2019-12-02 14:56:19.307  INFO [zuul,,,] 9534 --- [main] com.bp.getway.GetwayApplicationTests     : The following profiles are active: dev
+2019-12-02 14:56:19.324  INFO [zuul,,,] 9534 --- [main] o.s.w.c.s.GenericWebApplicationContext   : Refreshing org.springframework.web.context.support.GenericWebApplicationContext@5471388b: startup date [Mon Dec 02 14:56:19 CST 2019]; parent: org.springframework.context.annotation.AnnotationConfigApplicationContext@1e4d3ce5

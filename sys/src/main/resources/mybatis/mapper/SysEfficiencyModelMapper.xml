@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.SysEfficiencyModelMapper">
+
+    <!-- 带参数查询戒治效能分析评估系统评估模型列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        uuid,sort_no,type,target,standard,score,remark,inserter,insert_time,updater,update_time
+        from sys_efficiency_model where 1=1
+        <if test="keyWord != null and keyWord != ''">
+            and (type like concat('%',#{keyWord},'%') or target like concat('%',#{keyWord},'%'))
+        </if>
+        <if test="type != null and type != ''">
+            and type like concat('%',#{type},'%')
+        </if>
+        <if test="target != null and target != ''">
+            and target like concat('%',#{target},'%')
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by sort_no asc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+</mapper>
+

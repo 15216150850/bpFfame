@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.UserMapper">
+
+    <sql id="select_condition">
+        <if test="conditionList !=null">
+            <foreach collection="conditionList" item="item">
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='equal'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} = #{item.conditionValueVal}
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='like'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} like concat('%',#{item.conditionValueVal},'%')
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='between'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} between ${item.conditionValueLeftVal} and
+                    ${item.conditionValueRightVal}
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='start'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} like concat(#{item.conditionValueVal},'%')
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='end'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} like concat('%',#{item.conditionValueVal})
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='unequal'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} &lt;&gt; #{item.conditionValueVal}
+                </if>
+                <if test="item.conditionOptionVal !=null and item.conditionOptionVal=='empty'">
+                    ${item.logicalOperator} ${item.conditionFieldVal} IS NULL OR ${item.conditionFieldVal} != ''
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <!-- 根据ID查询用户表 -->
+    <select id="selectUesrDtoById" resultType="com.bp.sys.po.UserDto">
+        select s1.*,s2.bmmc organization_name,
+        (select GROUP_CONCAT(role_code) from t_user_roles a left join t_role b on a.role_code=b.code where
+        a.user_id=s1.id) role_codes,
+        (select GROUP_CONCAT(b.name) from t_user_roles a left join t_role b on a.role_code=b.code where a.user_id=s1.id)
+        role_names
+        from
+        (select id,username,password,name,role_code,organization_code,status,inserter,insert_time,updater,update_time
+        from t_user
+        where id = #{id,jdbcType=INTEGER})s1 LEFT JOIN base_department s2 on s1.organization_code = s2.bmbm
+    </select>
+
+    <!-- 带参数查询用户表列表 -->
+    <select id="selectList" resultType="com.bp.sys.po.User" parameterType="map">
+        select s1.*,s2.name roleName,s3.bmmc organization_name,
+        (select GROUP_CONCAT(b.name) from t_user_roles a left join t_role b on a.role_code=b.code where a.user_id=s1.id)
+        roleNames
+        from
+        (select id, username, name, status, role_code ,organization_code from t_user where username != 'admin'
+        <if test="username !=null and username!=''">
+            and username like concat('%',#{username},'%')
+        </if>
+        <if test="keyWord !=null and keyWord!=''">
+            and (username like concat('%',#{keyWord},'%') OR name LIKE concat('%',#{keyWord},'%'))
+        </if>
+        <if test="name !=null and name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="roleCodes !=null and roleCodes!=''">
+            and role_code = #{roleCodes}
+        </if>
+        <if test="organizationCode !=null and organizationCode!=''">
+            and organization_code = #{organizationCode}
+        </if>
+        <if test="status !=null and status!=''">
+            and status = #{status}
+        </if>
+        )s1 left JOIN
+        (select code,name from t_role where 1=1
+        <if test="roleCode !=null and roleCode!=''">
+            and code = #{roleCode}
+        </if>
+        )s2 on s1.role_code = s2.code left JOIN
+        (select bmbm,bmmc from base_department where 1=1
+        <if test="organizationCode !=null and organizationCode!=''">
+            and bmbm = #{organizationCode}
+        </if>
+        )s3 on s1.organization_code = s3.bmbm
+        order by s1.id desc
+    </select>
+
+    <!-- 带参数查询用户表列表 -->
+    <select id="selectUserDtoList" resultType="com.bp.sys.po.UserDto" parameterType="map">
+        select s1.*,s2.name roleName,s3.bmmc organization_name,
+        (select GROUP_CONCAT(b.name) from t_user_roles a left join t_role b on a.role_code=b.code where a.user_id=s1.id)
+        roleNames
+        from
+        (select id, username, name, status, role_code ,organization_code from t_user where username != 'admin'
+        <if test="username !=null and username!=''">
+            and username like concat('%',#{username},'%')
+        </if>
+        <if test="keyWord !=null and keyWord!=''">
+            and (username like concat('%',#{keyWord},'%') OR name LIKE concat('%',#{keyWord},'%'))
+        </if>
+        <if test="name !=null and name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="roleCodes !=null and roleCodes!=''">
+            and role_code = #{roleCodes}
+        </if>
+        <if test="organizationCode !=null and organizationCode!=''">
+            and organization_code = #{organizationCode}
+        </if>
+        <if test="status !=null and status!=''">
+            and status = #{status}
+        </if>
+        <include refid="select_condition"></include>
+        )s1 left JOIN
+        (select code,name from t_role where 1=1
+        <if test="roleCode !=null and roleCode!=''">
+            and code = #{roleCode}
+        </if>
+        )s2 on s1.role_code = s2.code left JOIN
+        (select bmbm,bmmc from base_department where 1=1
+        <if test="organizationCode !=null and organizationCode!=''">
+            and bmbm = #{organizationCode}
+        </if>
+        )s3 on s1.organization_code = s3.bmbm
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by s1.id desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}
+        </if>
+    </select>
+
+    <select id="selectUserDtoListCount" resultType="java.lang.Long">
+        select count(*) from (
+        select s1.*,s2.name roleName,s3.bmmc organization_name,
+        (select GROUP_CONCAT(b.name) from t_user_roles a left join t_role b on a.role_code=b.code where a.user_id=s1.id)
+        roleNames
+        from
+        (select id, username, name, status, role_code ,organization_code from t_user where username != 'admin'
+        <if test="username !=null and username!=''">
+            and username like concat('%',#{username},'%')
+        </if>
+        <if test="keyWord !=null and keyWord!=''">
+            and (username like concat('%',#{keyWord},'%') OR name LIKE concat('%',#{keyWord},'%'))
+        </if>
+        <if test="name !=null and name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="roleCodes !=null and roleCodes!=''">
+            and role_code = #{roleCodes}
+        </if>
+        <if test="organizationCode !=null and organizationCode!=''">
+            and organization_code = #{organizationCode}
+        </if>
+        <if test="status !=null and status!=''">
+            and status = #{status}
+        </if>
+        )s1 left JOIN
+        (select code,name from t_role where 1=1
+        <if test="roleCode !=null and roleCode!=''">
+            and code = #{roleCode}
+        </if>
+        )s2 on s1.role_code = s2.code left JOIN
+        (select bmbm,bmmc from base_department where 1=1
+        <if test="organizationCode !=null and organizationCode!=''">
+            and bmbm = #{organizationCode}
+        </if>
+        )s3 on s1.organization_code = s3.bmbm
+        order by s1.id desc
+        )t
+
+    </select>
+
+
+    <select id="checkUsername" resultType="java.lang.Integer">
+        select count(id) from t_user where username=#{username}
+        <if test="id!=null and id !=''">
+            and id != #{id}
+        </if>
+    </select>
+
+    <!-- 根据用户查询用户信息 -->
+    <select id="selectByUsername" resultType="java.util.Map">
+        select id, username, password, name, status, role_code,
+        (select GROUP_CONCAT(role_code) from t_user_roles a left join t_role b on a.role_code=b.code where
+        a.user_id=s1.id) role_codes
+        from t_user s1
+        where s1.username=#{username}
+    </select>
+
+    <!-- 查询某个角色下的所有用户 -->
+    <select id="selectUserByRoleCode" resultType="java.lang.Integer">
+        select user_id from t_user_roles where role_code=#{roleCode}
+    </select>
+    <select id="findUserByUsername" resultType="java.util.Map">
+        SELECT a.*,b.tx,b.xzzw
+        from t_user a left join base_police b on a.username=b.jcbm where username=#{username}
+    </select>
+    <select id="findPermissionByUsername" resultType="java.util.Map">
+
+        <if test="username!='admin'">
+            (select s2.* from
+            (select * from t_role_res where role_code in(select role_code from t_user_roles where user_id=#{userId}))s1
+            left join
+            (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id
+            is not null)
+            union
+            (select s2.* from
+            (select * from t_user_res where user_id=#{userId})s1 left join
+            (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id
+            is not null)
+            union
+            (select s2.* from
+            (select b.res_id from t_temp_res a left join t_temp_res_info b on a.id=b.pid where
+            instr(user_id,#{userId})>0 and NOW()<![CDATA[ >= ]]> a.start_time and NOW()<![CDATA[ <= ]]>a.end_time)s1
+            left join
+            (select id, name, url, pid, permission, sort_no, type,target from t_res)s2 on s1.res_id = s2.id where s2.id
+            is not null)
+        </if>
+        <if test='username=="admin"'>
+            select id, name, url, pid, permission, sort_no, type,target from t_res order by sort_no asc
+        </if>
+    </select>
+    <!-- 根据部门集合查询该部门集合下所有用户信息 -->
+    <select id="selectUserByOrgIds" resultType="com.bp.sys.po.BaseAddicts" parameterType="java.lang.Integer">
+        SELECT t2.* FROM (SELECT id,code,name FROM t_organization WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ) t1 LEFT JOIN t_user t2 ON t1.code=t2.organization_code
+    </select>
+
+    <!-- 根据角色集合查询该角色集合下所有用户信息 -->
+    <select id="selectUserByRoleIds" resultType="com.bp.sys.po.BaseAddicts" parameterType="java.lang.Integer">
+        SELECT t3.* FROM (SELECT id,code FROM t_role t1 where id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ) t1 LEFT JOIN t_user_roles t2 ON t1.code=t2.role_code LEFT JOIN t_user t3 on t2.user_id = t3.id
+    </select>
+    <select id="findUserByBmbm" resultType="com.bp.common.entity.SysUser">
+        SELECT * FROM t_user where organization_code in
+        <foreach item="bmbm" collection="bmbms" open="(" separator="," close=")">
+            #{bmbm}
+        </foreach>
+    </select>
+    <select id="selectUserInfoById" resultType="java.util.Map">
+        SELECT a.id a.name,a.username,b.bmmc from t_user a
+        LEFT JOIN base_department b on a.organization_code=b.bmbm
+        where a.id=#{id}
+    </select>
+
+    <!--根据用户名修改账号状态-->
+    <update id="updateStatusByUsername">
+        update t_user set status = #{status} where username=#{username}
+    </update>
+    <update id="updateByUserName">
+        update t_user set head_img=#{headImg},organization_code=#{organizationCode} where username=#{username}
+    </update>
+
+    <select id="selectByName" parameterType="java.lang.String" resultType="java.util.Map">
+        select * from t_user where name = #{name}
+    </select>
+
+    <select id="findNotPoliceAccounts" resultType="java.util.Map">
+        select name, username, organization_code from t_user where name not in (select xm from base_police)
+    </select>
+
+    <!--消息通知-根据系统角色查询用户-->
+    <select id="findUserByRoleCodes" resultType="com.bp.common.entity.SysUser">
+        SELECT * FROM t_user where role_code in
+        <foreach item="roleCode" collection="roleCodeArr" open="(" separator="," close=")">
+            #{roleCode}
+        </foreach>
+    </select>
+
+    <!--消息通知-根据用户名查询用户-->
+    <select id="findUserByUsernames" resultType="com.bp.common.entity.SysUser">
+        SELECT * FROM t_user where username in
+        <foreach item="username" collection="usernameArr" open="(" separator="," close=")">
+            #{username}
+        </foreach>
+    </select>
+    <select id="findUserIdsByJcbms" resultType="java.lang.String">
+        select group_concat(id) from t_user where username in
+        <foreach item="username" collection="array" open="(" separator="," close=")">
+            #{username}
+        </foreach>
+    </select>
+    <select id="findAllAccount" resultType="java.util.Map">
+        SELECT a.id, a.name, a.username as jcbm , b.bmmc from t_user a left join base_department b on a.organization_code=b.bmbm
+    </select>
+</mapper>

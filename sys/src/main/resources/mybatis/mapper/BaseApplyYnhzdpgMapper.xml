@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseApplyYnhzdpgMapper">
+	
+	<!-- 带参数查询一年后诊断评估提请列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select t1.*,t2.szdd,t2.sfwzdry from base_apply_ynhzdpg t1
+        left join (select * from base_addicts where jdryzt in('01','02','03','04')) t2 on t1.jdrybm = t2.jdrybm
+        where 1=1
+		<if test="sign ==1">
+            and t1.state = 0
+        </if>
+        <if test="sign ==2">
+            and t1.state in (1,2)
+        </if>
+        <if test="sign ==3">
+            and t1.state = 3
+            <if test="isHistory != 1">
+                and t1.month like concat('%',#{month},'%')
+            </if>
+        </if>
+        <if test="state !='' and state != null">
+            and t1.state = #{state}
+        </if>
+        <if test="zdQm !='' and zdQm != null">
+            and t1.zd_qm = #{zdQm}
+        </if>
+        <if test="bmbm !='' and bmbm != null">
+            and t2.bmbm like concat('%',#{bmbm},'%')
+        </if>
+        <if test="jdrybm !='' and jdrybm != null">
+            and t2.jdrybm like concat('%',#{jdrybm},'%')
+        </if>
+        <if test="jdryxm !='' and jdryxm != null">
+            and t2.jdryxm like concat('%',#{jdryxm},'%')
+        </if>
+        <if test="bmmc !='' and bmmc != null">
+            and t2.szdd like concat('%',#{bmmc},'%')
+        </if>
+        <if test="keyWord !='' and keyWord != null">
+            and (t2.xm like concat('%',#{keyWord},'%') or t2.jdrybm like concat('%',#{keyWord},'%') )
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+    <!--查询本月是否已有最新的戒毒人员提拔记录-->
+    <select id="findRecord" resultType="com.bp.sys.po.BaseApplyYnhzdpg">
+        select * from base_apply_ynhzdpg where jdrybm = #{jdrybm} and month like concat('%',#{month},'%')
+    </select>
+
+</mapper>
+

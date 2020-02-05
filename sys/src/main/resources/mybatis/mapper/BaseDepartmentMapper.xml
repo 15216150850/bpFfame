@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sys.mapper.BaseDepartmentMapper">
+    <update id="updateSjbmbm">
+        UPDATE base_department set sjbmbm=#{newBmbm} WHERE sjbmbm=#{oldBmbm}
+    </update>
+    <!-- 带参数查询 戒毒机构内设部门信息列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        a.*,t2.name as bmlx_name, t3.name as jzjb_name,b.bmmc as sjbmmc
+        from base_department a
+        LEFT JOIN ser_dictionary t2 ON a.bmlx = t2.code AND t2.type='bmlx'
+        LEFT JOIN ser_dictionary t3 ON a.jzjb = t3.code AND t3.type='jzjb'
+        LEFT JOIN base_department b on a.sjbmbm=b.bmbm
+        where 1=1
+        <if test="bmbm!=null and bmbm != ''">
+            AND a.sjbmbm=#{bmbm}
+        </if>
+        <!-- 一级部门 -->
+        <if test="level == 1 ">
+            and (a.sjbmbm = '' or sjbmbm is null)
+        </if>
+        <!-- 二级部门 or 三级部门-->
+        <if test="level == 2 or level == 3">
+            and (a.sjbmbm = #{sjbmbm})
+        </if>
+        <if test="level == 4 ">
+            and (a.sjbmbm = #{sjbmbm} or a.bmbm = #{sjbmbm})
+        </if>
+        <!-- 根据戒毒机构查询 -->
+        <if test="jdjgbm != null and jdjgbm != ''">
+            and a.jdjgbm = #{jdjgbm}
+        </if>
+        <!-- 根据部门类型查询 -->
+        <if test="bmlx != null and bmlx != ''">
+            and a.bmlx in
+            <foreach item="lx" collection="bmlx" open="(" separator="," close=")">
+                #{lx}
+            </foreach>
+        </if>
+        <if test="field == null">
+        order by a.bmbm asc
+        </if>
+        <if test="field !=null or order != null">
+            order by ${field} ${order}
+        </if>
+
+    </select>
+
+    <select id="selectLastByDpdeCode" resultType="java.lang.String">
+        SELECT dept_code from base_department where sj_dept_code = #{sjDeptCode} order by dept_code desc limit 0,1
+
+    </select>
+
+    <!-- 查询所有一级部门信息 -->
+    <select id="selectAllParentDepartment" resultType="java.util.HashMap">
+        select bd.bmbm, bd.bmmc from base_department bd where (bd.sjbmbm = '' or bd.sjbmbm is null)
+    </select>
+
+    <!-- 根据部门类型和部门编码查询对应部门 -->
+    <select id="selectDepartmentByBmlxAndBmbm" resultType="java.util.HashMap">
+        select bd.bmbm, bd.bmmc from base_department bd where 1=1
+        <if test="bmlx != null and bmlx != ''">
+            and bd.bmlx = #{bmlx}
+        </if>
+        <if test="bmbm != null and bmbm != ''">
+            and bd.bmbm = #{bmbm}
+        </if>
+        order by bmbm asc;
+    </select>
+
+    <!--    查询大队信息-->
+    <select id="selectDd" resultType="java.util.HashMap">
+        select bd.bmbm, bd.bmmc from base_department bd where 1=1
+        and bd.bmlx = "03"
+        order by bmbm asc;
+    </select>
+
+
+    <!--  根据父级部门查询所有子级部门信息 -->
+    <select id="selectChildDepartByParentId" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select bd.bmbm, bd.bmmc from base_department bd where bd.sjbmbm = #{_parameter}
+    </select>
+
+    <!--根据部门编码查询-->
+    <select id="findByBmbm" resultType="com.bp.sys.po.BaseDepartment" parameterType="java.lang.String">
+        SELECT * FROM base_department WHERE bmbm=#{bmbm}
+    </select>
+
+    <select id="findByBmmc" resultType="com.bp.sys.po.BaseDepartment" parameterType="java.lang.String">
+        SELECT * FROM base_department WHERE bmmc = #{bmmc} limit 0,1
+    </select>
+</mapper>
+

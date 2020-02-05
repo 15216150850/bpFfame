@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.act.mapper.ActBpmnRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.bp.act.entity.ActBpmnRecord">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="bpmn_url" jdbcType="VARCHAR" property="bpmnUrl"/>
+        <result column="bpmn_name" jdbcType="VARCHAR" property="bpmnName"/>
+        <result column="png_url" jdbcType="VARCHAR" property="pngUrl"/>
+        <result column="png_name" jdbcType="VARCHAR" property="pngName"/>
+        <result column="is_delopy" jdbcType="INTEGER" property="isDelopy"/>
+        <result column="inserter" jdbcType="INTEGER" property="inserter"/>
+        <result column="insert_time" jdbcType="TIMESTAMP" property="insertTime"/>
+        <result column="updater" jdbcType="INTEGER" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="flow_key" jdbcType="VARCHAR" property="flowKey"/>
+        <result column="image_url" jdbcType="VARCHAR" property="imageUrl"/>
+        <result column="file_url" jdbcType="VARCHAR" property="fileUrl"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,name,bpmn_url,bpmn_name,png_url,png_name,is_delopy,inserter,insert_time,updater,update_time,image_url,flow_key,file_url
+    </sql>
+
+    <!-- 添加流程部署表 -->
+    <insert id="insert" parameterType="com.bp.act.entity.ActBpmnRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into act_bpmn_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null">name,</if>
+            <if test="bpmnUrl != null">bpmn_url,</if>
+            <if test="bpmnName != null">bpmn_name,</if>
+            <if test="pngUrl != null">png_url,</if>
+            <if test="pngName != null">png_name,</if>
+            <if test="isDelopy != null">is_delopy,</if>
+            <if test="inserter != null">inserter,</if>
+            <if test="insertTime != null">insert_time,</if>
+            <if test="updater != null">updater,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="flowKey != null">flow_key,</if>
+            <if test="imageUrl != null">image_url,</if>
+            <if test="fileUrl != null">file_url,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id,jdbcType=INTEGER},</if>
+            <if test="name != null">#{name,jdbcType=VARCHAR},</if>
+            <if test="bpmnUrl != null">#{bpmnUrl,jdbcType=VARCHAR},</if>
+            <if test="bpmnName != null">#{bpmnName,jdbcType=VARCHAR},</if>
+            <if test="pngUrl != null">#{pngUrl,jdbcType=VARCHAR},</if>
+            <if test="pngName != null">#{pngName,jdbcType=VARCHAR},</if>
+            <if test="isDelopy != null">#{isDelopy,jdbcType=INTEGER},</if>
+            <if test="inserter != null">#{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">#{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">#{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="flowKey != null">#{flowKey,jdbcType=VARCHAR},</if>
+            <if test="imageUrl != null">#{imageUrl,jdbcType=VARCHAR},</if>
+            <if test="fileUrl != null">#{fileUrl,jdbcType=VARCHAR},</if>
+        </trim>
+    </insert>
+
+    <!-- 删除流程部署表 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from act_bpmn_record where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 批量删除流程部署表 -->
+    <delete id="deleteByIds" parameterType="java.lang.Integer">
+        delete from act_bpmn_record where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteByKey">
+        delete from act_bpmn_record where flow_key=#{key}
+    </delete>
+
+    <!-- 修改流程部署表 -->
+    <update id="update" parameterType="com.bp.act.entity.ActBpmnRecord">
+        update act_bpmn_record
+        <set>
+            <if test="id != null">id = #{id,jdbcType=INTEGER},</if>
+            <if test="name != null">name = #{name,jdbcType=VARCHAR},</if>
+            <if test="bpmnUrl != null">bpmn_url = #{bpmnUrl,jdbcType=VARCHAR},</if>
+            <if test="bpmnName != null">bpmn_name = #{bpmnName,jdbcType=VARCHAR},</if>
+            <if test="pngUrl != null">png_url = #{pngUrl,jdbcType=VARCHAR},</if>
+            <if test="pngName != null">png_name = #{pngName,jdbcType=VARCHAR},</if>
+            <if test="isDelopy != null">is_delopy = #{isDelopy,jdbcType=INTEGER},</if>
+            <if test="inserter != null">inserter = #{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">updater = #{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="flowKey != null">flow_key = #{flowKey,jdbcType=VARCHAR},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl,jdbcType=VARCHAR},</if>
+            <if test="fileUrl != null">file_url = #{fileUrl,jdbcType=VARCHAR},</if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <!-- 根据ID查询流程部署表 -->
+    <select id="selectById" resultType="java.util.Map">
+        select
+        id,name,bpmn_url,bpmn_name,png_url,png_name,is_delopy,inserter,insert_time,updater,update_time,image_url,flow_key,file_url
+        from act_bpmn_record
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 根据ID查询流程部署表实体 -->
+    <select id="selectEntityById" resultMap="BaseResultMap">
+        select
+        id,name,bpmn_url,bpmn_name,png_url,png_name,is_delopy,inserter,insert_time,updater,update_time,image_url,flow_key,file_url
+        from act_bpmn_record
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 查询流程部署表列表 -->
+    <select id="selectAll" resultType="java.util.Map">
+        select
+        id,name,bpmn_url,bpmn_name,png_url,png_name,is_delopy,inserter,insert_time,updater,update_time,image_url,flow_key,file_url
+        from act_bpmn_record
+    </select>
+
+    <!-- 带参数查询流程部署表列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        id,name,bpmn_url,bpmn_name,png_url,png_name,is_delopy,inserter,insert_time,updater,update_time,image_url,flow_key,file_url
+        from act_bpmn_record where 1=1
+        <if test="keyWord !=null and keyWord !='' ">
+            and name like concat('%', #{keyWord}, '%')
+        </if>
+
+    </select>
+
+    <!-- 带参数查询流程部署表列表 -->
+    <select id="selectListCount" resultType="java.lang.Long">
+        select count(*) from (
+        select
+        id,name,bpmn_url,bpmn_name,png_url,png_name,is_delopy,inserter,insert_time,updater,update_time,image_url,flow_key,file_url
+        from act_bpmn_record where 1=1
+        <if test="keyWord !=null and keyWord !='' ">
+            and name like concat('%', #{keyWord}, '%')
+        </if>
+        )t
+    </select>
+    <select id="findByKey" resultType="com.bp.act.entity.ActBpmnRecord">
+
+        SELECT * FROM act_bpmn_record where flow_key=#{key}
+    </select>
+
+</mapper>
+

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bp.sixsys.mapper.insp.FlowInspBmtbppspMapper">
+	
+	<!-- 带参数查询通报批评审批（部门）列表 -->
+	<select id="selectList" resultType="java.util.Map">
+		select
+			a.uuid,a.bh,e.name as flowStateName,d.bmmc as bmname ,a.btbppbm,a.sj,a.btbppsy,a.sqr,a.sqrbm,a.inserter,a.insert_time,a.updater,a.update_time,
+			a.act_title,a.pid,a.remark,a.doc_state,a.flow_sn,a.flow_state
+		from flow_insp_bmtbppsp a
+        LEFT JOIN base_department d ON a.btbppbm = d.bmbm
+        left join t_dictionary e on a.flow_state = e.code and e.type = 'flowState'
+        where 1=1
+        <if test="flowState != null and flowState!=''">
+            AND( a.flow_state=#{flowState}
+            <if test="flowState==2">
+                or a.flow_state=6 or a.flow_state=7
+            </if>
+            <if test="flowState==5">
+                or a.flow_state=1
+            </if>
+            <if test="flowState==3">
+                or a.flow_state=4
+            </if>
+            )
+        </if>
+        <if test="btbppbm !=null and btbppbm!=''">
+            and a.btbppbm = #{btbppbm}
+        </if>
+        <if test="startTime !=null and startTime !=''">
+            and a.sj &gt;= #{startTime}
+        </if>
+        <if test="currentUserId != null and currentUserId != '' and currentUserId != 1">
+            and a.inserter = #{currentUserId}
+        </if>
+        <if test="endTime !=null and endTime !=''">
+            and a.sj  &lt; #{endTime}
+        </if>
+        <if test="field == null or field =='' or order ==null or order ==''">
+            order by a.insert_time desc
+        </if>
+        <if test="field !=null and field !='' and order != null and order !=''">
+            order by ${field} ${order}  
+        </if>
+	</select>
+
+    <!-- 根据id查询 -->
+    <select id="selectEntityById" resultType="com.bp.sixsys.po.insp.FlowInspBmtbppsp">
+       select t1.*,d.bmmc as bmname from flow_insp_bmtbppsp t1
+		LEFT JOIN base_department d ON t1.btbppbm = d.bmbm
+		where t1.uuid = #{uuid,jdbcType=VARCHAR}
+    </select>
+    <!-- 根据Pid查询记录表实体 -->
+    <select id="findByPid" resultType="com.bp.sixsys.po.insp.FlowInspBmtbppsp">
+       select t1.*,d.bmmc as bmname from flow_insp_bmtbppsp t1
+		LEFT JOIN base_department d ON t1.btbppbm = d.bmbm
+		where t1.pid = #{pid,jdbcType=VARCHAR}
+    </select>
+
+
+</mapper>
+
